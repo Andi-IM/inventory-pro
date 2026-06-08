@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Checkin" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler">
+  <bpmn:collaboration id="Collaboration_Checkin">
+    <bpmn:participant id="Participant_Checkin" name="Proses Pengembalian (Check-in)" processRef="Process_Checkin" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Checkin" name="Proses Checkin" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_Checkin">
+      <bpmn:lane id="Lane_MekanikIn" name="Mekanik">
+        <bpmn:flowNodeRef>Start_ReturnTool</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_AdminIn" name="Admin Gudang">
+        <bpmn:flowNodeRef>Task_QC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ConditionCheck</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputCheckinGood</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputCheckinBad</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_SystemIn" name="Sistem Aplikasi">
+        <bpmn:flowNodeRef>Task_SysUpdateGood</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SysUpdateBad</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_CheckinSuccess</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_CheckinIssue</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_ReturnTool" name="Kembalikan Alat">
+      <bpmn:outgoing>Flow_r1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_QC" name="Terima &#38; Cek Fisik (QC)">
+      <bpmn:incoming>Flow_r1</bpmn:incoming>
+      <bpmn:outgoing>Flow_r2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ConditionCheck" name="Kondisi Alat?">
+      <bpmn:incoming>Flow_r2</bpmn:incoming>
+      <bpmn:outgoing>Flow_rGood</bpmn:outgoing>
+      <bpmn:outgoing>Flow_rBad</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_InputCheckinGood" name="Input Check-in Normal">
+      <bpmn:incoming>Flow_rGood</bpmn:incoming>
+      <bpmn:outgoing>Flow_r3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_SysUpdateGood" name="Tutup Transaksi &#38; Kembalikan Stok">
+      <bpmn:incoming>Flow_r3</bpmn:incoming>
+      <bpmn:outgoing>Flow_r4</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="Association_Task_SysUpdateGood_DataObject_TxDone">
+        <bpmn:targetRef>DataObject_TxDone</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="Association_Task_SysUpdateGood_DataObject_ToolAvailableUp">
+        <bpmn:targetRef>DataObject_ToolAvailableUp</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:endEvent id="End_CheckinSuccess" name="Selesai (Aman)">
+      <bpmn:incoming>Flow_r4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_InputCheckinBad" name="Input Kerusakan &#38; Catatan Penalti">
+      <bpmn:incoming>Flow_rBad</bpmn:incoming>
+      <bpmn:outgoing>Flow_r5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_SysUpdateBad" name="Ubah Status Alat (Broken) &#38; Tutup Transaksi">
+      <bpmn:incoming>Flow_r5</bpmn:incoming>
+      <bpmn:outgoing>Flow_r6</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="Association_Task_SysUpdateBad_DataObject_TxPenalty">
+        <bpmn:targetRef>DataObject_TxPenalty</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="Association_Task_SysUpdateBad_DataObject_ToolCondition">
+        <bpmn:targetRef>DataObject_ToolCondition</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:endEvent id="End_CheckinIssue" name="Selesai (Perlu Investigasi)">
+      <bpmn:incoming>Flow_r6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_r1" sourceRef="Start_ReturnTool" targetRef="Task_QC" />
+    <bpmn:sequenceFlow id="Flow_r2" sourceRef="Task_QC" targetRef="Gateway_ConditionCheck" />
+    <bpmn:sequenceFlow id="Flow_rGood" name="Baik" sourceRef="Gateway_ConditionCheck" targetRef="Task_InputCheckinGood" />
+    <bpmn:sequenceFlow id="Flow_rBad" name="Rusak" sourceRef="Gateway_ConditionCheck" targetRef="Task_InputCheckinBad" />
+    <bpmn:sequenceFlow id="Flow_r3" sourceRef="Task_InputCheckinGood" targetRef="Task_SysUpdateGood" />
+    <bpmn:sequenceFlow id="Flow_r4" sourceRef="Task_SysUpdateGood" targetRef="End_CheckinSuccess" />
+    <bpmn:sequenceFlow id="Flow_r5" sourceRef="Task_InputCheckinBad" targetRef="Task_SysUpdateBad" />
+    <bpmn:sequenceFlow id="Flow_r6" sourceRef="Task_SysUpdateBad" targetRef="End_CheckinIssue" />
+    <bpmn:dataObjectReference id="DataObject_TxDone" name="[Entity] Transaction (Status: COMPLETED)" dataObjectRef="DataObject_6" />
+    <bpmn:dataObject id="DataObject_6" />
+    <bpmn:dataObjectReference id="DataObject_ToolAvailableUp" name="[Entity] Tool (Available Qty Naik)" dataObjectRef="DataObject_7" />
+    <bpmn:dataObject id="DataObject_7" />
+    <bpmn:dataObjectReference id="DataObject_TxPenalty" name="[Entity] Transaction (Note: Rusak)" dataObjectRef="DataObject_8" />
+    <bpmn:dataObject id="DataObject_8" />
+    <bpmn:dataObjectReference id="DataObject_ToolCondition" name="[Entity] ToolCondition (Status: BROKEN)" dataObjectRef="DataObject_9" />
+    <bpmn:dataObject id="DataObject_9" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Checkin">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Checkin" bpmnElement="Process_Checkin">
+      <bpmndi:BPMNShape id="Start_ReturnTool_di" bpmnElement="Start_ReturnTool">
+        <dc:Bounds x="57" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_QC_di" bpmnElement="Task_QC">
+        <dc:Bounds x="175" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ConditionCheck_di" bpmnElement="Gateway_ConditionCheck" isMarkerVisible="true">
+        <dc:Bounds x="350" y="45" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputCheckinGood_di" bpmnElement="Task_InputCheckinGood">
+        <dc:Bounds x="475" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SysUpdateGood_di" bpmnElement="Task_SysUpdateGood">
+        <dc:Bounds x="625" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CheckinSuccess_di" bpmnElement="End_CheckinSuccess">
+        <dc:Bounds x="807" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_TxDone_di" bpmnElement="DataObject_TxDone">
+        <dc:Bounds x="609" y="170" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputCheckinBad_di" bpmnElement="Task_InputCheckinBad">
+        <dc:Bounds x="475" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SysUpdateBad_di" bpmnElement="Task_SysUpdateBad">
+        <dc:Bounds x="625" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CheckinIssue_di" bpmnElement="End_CheckinIssue">
+        <dc:Bounds x="807" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_ToolAvailableUp_di" bpmnElement="DataObject_ToolAvailableUp">
+        <dc:Bounds x="705" y="170" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_TxPenalty_di" bpmnElement="DataObject_TxPenalty">
+        <dc:Bounds x="609" y="310" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_ToolCondition_di" bpmnElement="DataObject_ToolCondition">
+        <dc:Bounds x="705" y="310" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_r1_di" bpmnElement="Flow_r1">
+        <di:waypoint x="93" y="70" />
+        <di:waypoint x="175" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_r2_di" bpmnElement="Flow_r2">
+        <di:waypoint x="275" y="70" />
+        <di:waypoint x="350" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_rGood_di" bpmnElement="Flow_rGood">
+        <di:waypoint x="400" y="70" />
+        <di:waypoint x="475" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_rBad_di" bpmnElement="Flow_rBad">
+        <di:waypoint x="375" y="95" />
+        <di:waypoint x="375" y="210" />
+        <di:waypoint x="475" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_r3_di" bpmnElement="Flow_r3">
+        <di:waypoint x="575" y="70" />
+        <di:waypoint x="625" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_r4_di" bpmnElement="Flow_r4">
+        <di:waypoint x="725" y="70" />
+        <di:waypoint x="807" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_r5_di" bpmnElement="Flow_r5">
+        <di:waypoint x="575" y="210" />
+        <di:waypoint x="625" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_r6_di" bpmnElement="Flow_r6">
+        <di:waypoint x="725" y="210" />
+        <di:waypoint x="807" y="210" />
+      </bpmndi:BPMNEdge>
+    
+      <bpmndi:BPMNEdge id="Association_Task_SysUpdateGood_DataObject_TxDone_di" bpmnElement="Association_Task_SysUpdateGood_DataObject_TxDone">
+        <di:waypoint x="675" y="110" />
+        <di:waypoint x="627" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SysUpdateGood_DataObject_ToolAvailableUp_di" bpmnElement="Association_Task_SysUpdateGood_DataObject_ToolAvailableUp">
+        <di:waypoint x="675" y="110" />
+        <di:waypoint x="723" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SysUpdateBad_DataObject_TxPenalty_di" bpmnElement="Association_Task_SysUpdateBad_DataObject_TxPenalty">
+        <di:waypoint x="675" y="250" />
+        <di:waypoint x="627" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SysUpdateBad_DataObject_ToolCondition_di" bpmnElement="Association_Task_SysUpdateBad_DataObject_ToolCondition">
+        <di:waypoint x="675" y="250" />
+        <di:waypoint x="723" y="310" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

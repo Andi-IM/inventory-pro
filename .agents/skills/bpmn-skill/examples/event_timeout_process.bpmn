@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_event_timeout_process" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+
+  <bpmn:process id="Process_1j9gubt" name="Event Timeout Process" isExecutable="true">
+
+    <!-- Start: request sent -->
+    <bpmn:startEvent id="StartEvent_1" name="Request Sent">
+      <bpmn:outgoing>Flow_start_to_send</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Task: send request -->
+    <bpmn:task id="Task_SendRequest" name="Send Request">
+      <bpmn:incoming>Flow_start_to_send</bpmn:incoming>
+      <bpmn:outgoing>Flow_send_to_eventGateway</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Event-based Gateway: wait for reply OR timeout -->
+    <bpmn:eventBasedGateway id="EventGateway_WaitForReplyOrTimeout" name="Reply or Timeout?">
+      <bpmn:incoming>Flow_send_to_eventGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_gateway_to_replyEvent</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gateway_to_timerEvent</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <!-- Message catch: reply received -->
+    <bpmn:intermediateCatchEvent id="Event_ReplyReceived" name="Reply Received">
+      <bpmn:incoming>Flow_gateway_to_replyEvent</bpmn:incoming>
+      <bpmn:outgoing>Flow_replyEvent_to_handleReply</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Timer catch: timeout reached -->
+    <bpmn:intermediateCatchEvent id="Event_Timeout" name="Timeout Reached">
+      <bpmn:incoming>Flow_gateway_to_timerEvent</bpmn:incoming>
+      <bpmn:outgoing>Flow_timeoutEvent_to_handleTimeout</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <!-- contoh: timeout 1 menit untuk testing -->
+        <bpmn:timeDuration>PT1M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Path: handle reply -->
+    <bpmn:task id="Task_HandleReply" name="Handle Successful Reply">
+      <bpmn:incoming>Flow_replyEvent_to_handleReply</bpmn:incoming>
+      <bpmn:outgoing>Flow_handleReply_to_endSuccess</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Success" name="Completed (Reply)">
+      <bpmn:incoming>Flow_handleReply_to_endSuccess</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Path: handle timeout -->
+    <bpmn:task id="Task_HandleTimeout" name="Handle Timeout">
+      <bpmn:incoming>Flow_timeoutEvent_to_handleTimeout</bpmn:incoming>
+      <bpmn:outgoing>Flow_handleTimeout_to_endTimeout</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Timeout" name="Completed (Timeout)">
+      <bpmn:incoming>Flow_handleTimeout_to_endTimeout</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_start_to_send" sourceRef="StartEvent_1" targetRef="Task_SendRequest" />
+    <bpmn:sequenceFlow id="Flow_send_to_eventGateway" sourceRef="Task_SendRequest" targetRef="EventGateway_WaitForReplyOrTimeout" />
+
+    <bpmn:sequenceFlow id="Flow_gateway_to_replyEvent" sourceRef="EventGateway_WaitForReplyOrTimeout" targetRef="Event_ReplyReceived" />
+    <bpmn:sequenceFlow id="Flow_gateway_to_timerEvent" sourceRef="EventGateway_WaitForReplyOrTimeout" targetRef="Event_Timeout" />
+
+    <bpmn:sequenceFlow id="Flow_replyEvent_to_handleReply" sourceRef="Event_ReplyReceived" targetRef="Task_HandleReply" />
+    <bpmn:sequenceFlow id="Flow_timeoutEvent_to_handleTimeout" sourceRef="Event_Timeout" targetRef="Task_HandleTimeout" />
+
+    <bpmn:sequenceFlow id="Flow_handleReply_to_endSuccess" sourceRef="Task_HandleReply" targetRef="EndEvent_Success" />
+    <bpmn:sequenceFlow id="Flow_handleTimeout_to_endTimeout" sourceRef="Task_HandleTimeout" targetRef="EndEvent_Timeout" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_event_timeout">
+    <bpmndi:BPMNPlane id="BPMNPlane_event_timeout" bpmnElement="Process_1j9gubt">
+
+      <!-- Shapes -->
+      <bpmndi:BPMNShape id="Shape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds x="120" y="160" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_SendRequest" bpmnElement="Task_SendRequest">
+        <dc:Bounds x="200" y="140" width="120" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EventGateway_WaitForReplyOrTimeout" bpmnElement="EventGateway_WaitForReplyOrTimeout" isMarkerVisible="true">
+        <dc:Bounds x="360" y="155" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Event_ReplyReceived" bpmnElement="Event_ReplyReceived">
+        <dc:Bounds x="480" y="110" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Event_Timeout" bpmnElement="Event_Timeout">
+        <dc:Bounds x="480" y="230" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_HandleReply" bpmnElement="Task_HandleReply">
+        <dc:Bounds x="560" y="90" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Success" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="750" y="110" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_HandleTimeout" bpmnElement="Task_HandleTimeout">
+        <dc:Bounds x="560" y="210" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Timeout" bpmnElement="EndEvent_Timeout">
+        <dc:Bounds x="750" y="230" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Edges -->
+      <bpmndi:BPMNEdge id="Edge_Flow_start_to_send" bpmnElement="Flow_start_to_send">
+        <di:waypoint x="156" y="178" />
+        <di:waypoint x="200" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_send_to_eventGateway" bpmnElement="Flow_send_to_eventGateway">
+        <di:waypoint x="320" y="180" />
+        <di:waypoint x="360" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_gateway_to_replyEvent" bpmnElement="Flow_gateway_to_replyEvent">
+        <di:waypoint x="410" y="170" />
+        <di:waypoint x="480" y="128" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_gateway_to_timerEvent" bpmnElement="Flow_gateway_to_timerEvent">
+        <di:waypoint x="410" y="190" />
+        <di:waypoint x="480" y="248" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_replyEvent_to_handleReply" bpmnElement="Flow_replyEvent_to_handleReply">
+        <di:waypoint x="516" y="128" />
+        <di:waypoint x="560" y="130" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_timeoutEvent_to_handleTimeout" bpmnElement="Flow_timeoutEvent_to_handleTimeout">
+        <di:waypoint x="516" y="248" />
+        <di:waypoint x="560" y="250" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_handleReply_to_endSuccess" bpmnElement="Flow_handleReply_to_endSuccess">
+        <di:waypoint x="710" y="130" />
+        <di:waypoint x="750" y="128" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_handleTimeout_to_endTimeout" bpmnElement="Flow_handleTimeout_to_endTimeout">
+        <di:waypoint x="710" y="250" />
+        <di:waypoint x="750" y="248" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_parallel_review" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:process id="Process_1j9gubt" name="Parallel Review Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Review Requested">
+      <bpmn:outgoing>Flow_start_to_split</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:parallelGateway id="ParallelGateway_split" name="Start Parallel Reviews">
+      <bpmn:incoming>Flow_start_to_split</bpmn:incoming>
+      <bpmn:outgoing>Flow_split_to_business</bpmn:outgoing>
+      <bpmn:outgoing>Flow_split_to_technical</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_BusinessReview" name="Business Review">
+      <bpmn:incoming>Flow_split_to_business</bpmn:incoming>
+      <bpmn:outgoing>Flow_business_to_join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_TechnicalReview" name="Technical Review">
+      <bpmn:incoming>Flow_split_to_technical</bpmn:incoming>
+      <bpmn:outgoing>Flow_technical_to_join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="ParallelGateway_join" name="All Reviews Completed">
+      <bpmn:incoming>Flow_business_to_join</bpmn:incoming>
+      <bpmn:incoming>Flow_technical_to_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_join_to_finalize</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_FinalApproval" name="Finalize Decision">
+      <bpmn:incoming>Flow_join_to_finalize</bpmn:incoming>
+      <bpmn:outgoing>Flow_finalize_to_end</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_1" name="Review Completed">
+      <bpmn:incoming>Flow_finalize_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_to_split" sourceRef="StartEvent_1" targetRef="ParallelGateway_split" />
+    <bpmn:sequenceFlow id="Flow_split_to_business" sourceRef="ParallelGateway_split" targetRef="Task_BusinessReview" />
+    <bpmn:sequenceFlow id="Flow_split_to_technical" sourceRef="ParallelGateway_split" targetRef="Task_TechnicalReview" />
+    <bpmn:sequenceFlow id="Flow_business_to_join" sourceRef="Task_BusinessReview" targetRef="ParallelGateway_join" />
+    <bpmn:sequenceFlow id="Flow_technical_to_join" sourceRef="Task_TechnicalReview" targetRef="ParallelGateway_join" />
+    <bpmn:sequenceFlow id="Flow_join_to_finalize" sourceRef="ParallelGateway_join" targetRef="Task_FinalApproval" />
+    <bpmn:sequenceFlow id="Flow_finalize_to_end" sourceRef="Task_FinalApproval" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_parallel_review">
+    <bpmndi:BPMNPlane id="BPMNPlane_parallel_review" bpmnElement="Process_1j9gubt">
+      <bpmndi:BPMNShape id="Shape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds x="150" y="160" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ParallelGateway_split" bpmnElement="ParallelGateway_split" isMarkerVisible="true">
+        <dc:Bounds x="230" y="155" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_BusinessReview" bpmnElement="Task_BusinessReview">
+        <dc:Bounds x="340" y="80" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TechnicalReview" bpmnElement="Task_TechnicalReview">
+        <dc:Bounds x="340" y="230" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds x="862" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="853" y="196" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_FinalApproval" bpmnElement="Task_FinalApproval">
+        <dc:Bounds x="675" y="138" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ParallelGateway_join" bpmnElement="ParallelGateway_join" isMarkerVisible="true">
+        <dc:Bounds x="575" y="157" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="572" y="207" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_start_to_split" bpmnElement="Flow_start_to_split">
+        <di:waypoint x="186" y="178" />
+        <di:waypoint x="230" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_split_to_business" bpmnElement="Flow_split_to_business">
+        <di:waypoint x="280" y="170" />
+        <di:waypoint x="340" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_split_to_technical" bpmnElement="Flow_split_to_technical">
+        <di:waypoint x="280" y="190" />
+        <di:waypoint x="340" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_business_to_join" bpmnElement="Flow_business_to_join">
+        <di:waypoint x="480" y="66" />
+        <di:waypoint x="600" y="66" />
+        <di:waypoint x="600" y="157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_technical_to_join" bpmnElement="Flow_technical_to_join">
+        <di:waypoint x="480" y="270" />
+        <di:waypoint x="608" y="270" />
+        <di:waypoint x="608" y="199" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_join_to_finalize" bpmnElement="Flow_join_to_finalize">
+        <di:waypoint x="625" y="182" />
+        <di:waypoint x="650" y="182" />
+        <di:waypoint x="650" y="178" />
+        <di:waypoint x="675" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_finalize_to_end" bpmnElement="Flow_finalize_to_end">
+        <di:waypoint x="825" y="182" />
+        <di:waypoint x="844" y="182" />
+        <di:waypoint x="844" y="177" />
+        <di:waypoint x="862" y="177" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+                  id="Definitions_compensation_flow"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.47.0"
+                  modeler:executionPlatform="Camunda Platform"
+                  modeler:executionPlatformVersion="7.24.0">
+
+  <bpmn:process id="Process_1j9gubt" name="Compensation Flow" isExecutable="true">
+
+    <!-- Start -->
+    <bpmn:startEvent id="StartEvent_1" name="Process Started">
+      <bpmn:outgoing>Flow_start_to_book</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Main business task that may need compensation -->
+    <bpmn:task id="Task_BookService" name="Book Service">
+      <bpmn:incoming>Flow_start_to_book</bpmn:incoming>
+      <bpmn:outgoing>Flow_book_to_maybe_compensate</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Boundary compensation event attached to main task -->
+    <bpmn:boundaryEvent id="BoundaryEvent_CompensateBooking"
+                        name="Compensate Booking"
+                        attachedToRef="Task_BookService">
+      <bpmn:outgoing>Flow_boundary_to_compTask</bpmn:outgoing>
+      <bpmn:compensateEventDefinition />
+    </bpmn:boundaryEvent>
+
+    <!-- Compensation handler task (rollback) -->
+    <bpmn:task id="Task_CompensateBooking" name="Cancel Booking">
+      <bpmn:incoming>Flow_boundary_to_compTask</bpmn:incoming>
+    </bpmn:task>
+
+    <!-- Intermediate compensation throw: triggers compensation for completed tasks -->
+    <bpmn:intermediateThrowEvent id="ThrowEvent_TriggerCompensation" name="Trigger Compensation">
+      <bpmn:incoming>Flow_book_to_maybe_compensate</bpmn:incoming>
+      <bpmn:outgoing>Flow_throwComp_to_end</bpmn:outgoing>
+      <bpmn:compensateEventDefinition />
+    </bpmn:intermediateThrowEvent>
+
+    <!-- End after compensation logic (if any) -->
+    <bpmn:endEvent id="EndEvent_1" name="Process Completed">
+      <bpmn:incoming>Flow_throwComp_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_start_to_book" sourceRef="StartEvent_1" targetRef="Task_BookService" />
+    <bpmn:sequenceFlow id="Flow_book_to_maybe_compensate" sourceRef="Task_BookService" targetRef="ThrowEvent_TriggerCompensation" />
+    <bpmn:sequenceFlow id="Flow_throwComp_to_end" sourceRef="ThrowEvent_TriggerCompensation" targetRef="EndEvent_1" />
+    <bpmn:sequenceFlow id="Flow_boundary_to_compTask" sourceRef="BoundaryEvent_CompensateBooking" targetRef="Task_CompensateBooking" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_compensation_flow">
+    <bpmndi:BPMNPlane id="BPMNPlane_compensation_flow" bpmnElement="Process_1j9gubt">
+
+      <!-- Shapes -->
+      <bpmndi:BPMNShape id="Shape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds x="120" y="160" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_BookService" bpmnElement="Task_BookService">
+        <dc:Bounds x="200" y="140" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_BoundaryEvent_CompensateBooking" bpmnElement="BoundaryEvent_CompensateBooking">
+        <dc:Bounds x="320" y="190" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CompensateBooking" bpmnElement="Task_CompensateBooking">
+        <dc:Bounds x="380" y="220" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_ThrowEvent_TriggerCompensation" bpmnElement="ThrowEvent_TriggerCompensation">
+        <dc:Bounds x="380" y="160" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds x="480" y="160" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Edges -->
+      <bpmndi:BPMNEdge id="Edge_Flow_start_to_book" bpmnElement="Flow_start_to_book">
+        <di:waypoint x="156" y="178" />
+        <di:waypoint x="200" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_book_to_maybe_compensate" bpmnElement="Flow_book_to_maybe_compensate">
+        <di:waypoint x="340" y="180" />
+        <di:waypoint x="380" y="178" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_throwComp_to_end" bpmnElement="Flow_throwComp_to_end">
+        <di:waypoint x="416" y="178" />
+        <di:waypoint x="480" y="178" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_boundary_to_compTask" bpmnElement="Flow_boundary_to_compTask">
+        <di:waypoint x="338" y="208" />
+        <di:waypoint x="380" y="260" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

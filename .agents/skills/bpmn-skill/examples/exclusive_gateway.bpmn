@@ -1,42 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Decision" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="Process_WithDecision" isExecutable="false">
-    <bpmn:startEvent id="StartEvent_1" name="Order Received">
-      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_ExclusiveGateway" targetNamespace="http://example.com/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0">
+  <bpmn:process id="Process_exclusive_gateway" name="Exclusive Gateway Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Request Received">
+      <bpmn:outgoing>Flow_start_to_check</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Activity_CheckInventory" name="Check Inventory">
-      <bpmn:incoming>Flow_01</bpmn:incoming>
-      <bpmn:outgoing>Flow_02</bpmn:outgoing>
+    <bpmn:task id="Task_CheckRequest" name="Check Request">
+      <bpmn:incoming>Flow_start_to_check</bpmn:incoming>
+      <bpmn:outgoing>Flow_check_to_gateway</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:exclusiveGateway id="Gateway_Decision" name="Inventory Available?">
-      <bpmn:incoming>Flow_02</bpmn:incoming>
-      <bpmn:outgoing>Flow_Yes</bpmn:outgoing>
-      <bpmn:outgoing>Flow_No</bpmn:outgoing>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1" name="Approved?" default="Flow_gateway_to_rejected">
+      <bpmn:incoming>Flow_check_to_gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_gateway_to_approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gateway_to_rejected</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:task id="Activity_ProcessPayment" name="Process Payment">
-      <bpmn:incoming>Flow_Yes</bpmn:incoming>
-      <bpmn:outgoing>Flow_03</bpmn:outgoing>
+    <bpmn:task id="Task_Approved" name="Handle Approved Request">
+      <bpmn:incoming>Flow_gateway_to_approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_approved_to_end</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:task id="Activity_NotifyCustomer" name="Notify Customer">
-      <bpmn:incoming>Flow_No</bpmn:incoming>
-      <bpmn:outgoing>Flow_04</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Activity_ShipOrder" name="Ship Order">
-      <bpmn:incoming>Flow_03</bpmn:incoming>
-      <bpmn:outgoing>Flow_05</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:endEvent id="EndEvent_Success" name="Order Shipped">
-      <bpmn:incoming>Flow_05</bpmn:incoming>
+    <bpmn:endEvent id="EndEvent_Approved" name="Request Approved">
+      <bpmn:incoming>Flow_approved_to_end</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:endEvent id="EndEvent_Fail" name="Order Cancelled">
-      <bpmn:incoming>Flow_04</bpmn:incoming>
+    <bpmn:task id="Task_Rejected" name="Handle Rejected Request">
+      <bpmn:incoming>Flow_gateway_to_rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_rejected_to_end</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Rejected" name="Request Rejected">
+      <bpmn:incoming>Flow_rejected_to_end</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_01" sourceRef="StartEvent_1" targetRef="Activity_CheckInventory"/>
-    <bpmn:sequenceFlow id="Flow_02" sourceRef="Activity_CheckInventory" targetRef="Gateway_Decision"/>
-    <bpmn:sequenceFlow id="Flow_Yes" name="Yes" sourceRef="Gateway_Decision" targetRef="Activity_ProcessPayment"/>
-    <bpmn:sequenceFlow id="Flow_No" name="No" sourceRef="Gateway_Decision" targetRef="Activity_NotifyCustomer"/>
-    <bpmn:sequenceFlow id="Flow_03" sourceRef="Activity_ProcessPayment" targetRef="Activity_ShipOrder"/>
-    <bpmn:sequenceFlow id="Flow_04" sourceRef="Activity_NotifyCustomer" targetRef="EndEvent_Fail"/>
-    <bpmn:sequenceFlow id="Flow_05" sourceRef="Activity_ShipOrder" targetRef="EndEvent_Success"/>
+    <bpmn:sequenceFlow id="Flow_start_to_check" sourceRef="StartEvent_1" targetRef="Task_CheckRequest" />
+    <bpmn:sequenceFlow id="Flow_check_to_gateway" sourceRef="Task_CheckRequest" targetRef="ExclusiveGateway_1" />
+    <bpmn:sequenceFlow id="Flow_gateway_to_approved" name="approved == true" sourceRef="ExclusiveGateway_1" targetRef="Task_Approved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">
+        ${approved == true}
+      </bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gateway_to_rejected" name="else" sourceRef="ExclusiveGateway_1" targetRef="Task_Rejected" />
+    <bpmn:sequenceFlow id="Flow_approved_to_end" sourceRef="Task_Approved" targetRef="EndEvent_Approved" />
+    <bpmn:sequenceFlow id="Flow_rejected_to_end" sourceRef="Task_Rejected" targetRef="EndEvent_Rejected" />
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ExclusiveGateway">
+    <bpmndi:BPMNPlane id="BPMNPlane_ExclusiveGateway" bpmnElement="Process_exclusive_gateway">
+      <bpmndi:BPMNShape id="Shape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds x="150" y="240" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="123" y="276" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CheckRequest" bpmnElement="Task_CheckRequest">
+        <dc:Bounds x="230" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ExclusiveGateway_1" bpmnElement="ExclusiveGateway_1" isMarkerVisible="true">
+        <dc:Bounds x="370" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="430" y="253" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Rejected" bpmnElement="Task_Rejected">
+        <dc:Bounds x="540" y="380" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_Rejected" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="792" y="407" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="766" y="443" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Approved" bpmnElement="Task_Approved">
+        <dc:Bounds x="530" y="80" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_Approved" bpmnElement="EndEvent_Approved">
+        <dc:Bounds x="772" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="766" y="152" width="48" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_start_to_check" bpmnElement="Flow_start_to_check">
+        <di:waypoint x="186" y="258" />
+        <di:waypoint x="230" y="258" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_check_to_gateway" bpmnElement="Flow_check_to_gateway">
+        <di:waypoint x="330" y="258" />
+        <di:waypoint x="370" y="258" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_gateway_to_approved" bpmnElement="Flow_gateway_to_approved">
+        <di:waypoint x="395" y="235" />
+        <di:waypoint x="395" y="120" />
+        <di:waypoint x="530" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="424" y="96" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_gateway_to_rejected" bpmnElement="Flow_gateway_to_rejected">
+        <di:waypoint x="395" y="285" />
+        <di:waypoint x="395" y="420" />
+        <di:waypoint x="540" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="397" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_rejected_to_end" bpmnElement="Flow_rejected_to_end">
+        <di:waypoint x="680" y="424" />
+        <di:waypoint x="792" y="424" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_approved_to_end" bpmnElement="Flow_approved_to_end">
+        <di:waypoint x="670" y="124" />
+        <di:waypoint x="721" y="124" />
+        <di:waypoint x="721" y="119" />
+        <di:waypoint x="772" y="119" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>

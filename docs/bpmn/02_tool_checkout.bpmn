@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Checkout" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0">
+  <bpmn:collaboration id="Collaboration_Checkout">
+    <bpmn:participant id="Participant_Checkout" name="Proses Peminjaman/Pengambilan (Checkout)" processRef="Process_Checkout" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Checkout" name="Proses Checkout" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_Checkout">
+      <bpmn:lane id="Lane_Mekanik" name="Mekanik" />
+      <bpmn:lane id="Lane_Admin" name="Admin Gudang" />
+      <bpmn:lane id="Lane_Sistem" name="Sistem Aplikasi" />
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_RequestTool" name="Minta Alat (Bawa Work Order)">
+      <bpmn:outgoing>Flow_c1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_CheckPhysicalStock" name="Siapkan Fisik Alat">
+      <bpmn:incoming>Flow_c1</bpmn:incoming>
+      <bpmn:outgoing>Flow_c2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_InputCheckoutRequest" name="Input Checkout di Sistem">
+      <bpmn:incoming>Flow_c2</bpmn:incoming>
+      <bpmn:outgoing>Flow_c3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_TypeCheck" name="Tipe Barang?">
+      <bpmn:incoming>Flow_c3</bpmn:incoming>
+      <bpmn:outgoing>Flow_cConsumable</bpmn:outgoing>
+      <bpmn:outgoing>Flow_cReturnable</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_SystemConsumable" name="Buat Transaksi Selesai &#38; Kurangi Stok">
+      <bpmn:incoming>Flow_cConsumable</bpmn:incoming>
+      <bpmn:outgoing>Flow_c4</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="Association_Task_SystemConsumable_DataObject_TransactionC">
+        <bpmn:targetRef>DataObject_TransactionC</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="Association_Task_SystemConsumable_DataObject_ToolC">
+        <bpmn:targetRef>DataObject_ToolC</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:task id="Task_SystemReturnable" name="Buat Transaksi Pending &#38; Kurangi Stok Tersedia">
+      <bpmn:incoming>Flow_cReturnable</bpmn:incoming>
+      <bpmn:outgoing>Flow_c5</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="Association_Task_SystemReturnable_DataObject_TransactionR">
+        <bpmn:targetRef>DataObject_TransactionR</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="Association_Task_SystemReturnable_DataObject_ToolR">
+        <bpmn:targetRef>DataObject_ToolR</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_MergeSystem">
+      <bpmn:incoming>Flow_c4</bpmn:incoming>
+      <bpmn:incoming>Flow_c5</bpmn:incoming>
+      <bpmn:outgoing>Flow_c6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_HandoverFisik" name="Serahkan Alat ke Mekanik">
+      <bpmn:incoming>Flow_c6</bpmn:incoming>
+      <bpmn:outgoing>Flow_c7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ReceiveToolFisik" name="Terima Alat Fisik">
+      <bpmn:incoming>Flow_c7</bpmn:incoming>
+      <bpmn:outgoing>Flow_c8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="End_CheckoutDone" name="Selesai (Mekanik Bekerja)">
+      <bpmn:incoming>Flow_c8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_c1" sourceRef="Start_RequestTool" targetRef="Task_CheckPhysicalStock" />
+    <bpmn:sequenceFlow id="Flow_c2" sourceRef="Task_CheckPhysicalStock" targetRef="Task_InputCheckoutRequest" />
+    <bpmn:sequenceFlow id="Flow_c3" sourceRef="Task_InputCheckoutRequest" targetRef="Gateway_TypeCheck" />
+    <bpmn:sequenceFlow id="Flow_cConsumable" name="Consumable" sourceRef="Gateway_TypeCheck" targetRef="Task_SystemConsumable" />
+    <bpmn:sequenceFlow id="Flow_cReturnable" name="Returnable" sourceRef="Gateway_TypeCheck" targetRef="Task_SystemReturnable" />
+    <bpmn:sequenceFlow id="Flow_c4" sourceRef="Task_SystemConsumable" targetRef="Gateway_MergeSystem" />
+    <bpmn:sequenceFlow id="Flow_c5" sourceRef="Task_SystemReturnable" targetRef="Gateway_MergeSystem" />
+    <bpmn:sequenceFlow id="Flow_c6" sourceRef="Gateway_MergeSystem" targetRef="Task_HandoverFisik" />
+    <bpmn:sequenceFlow id="Flow_c7" sourceRef="Task_HandoverFisik" targetRef="Task_ReceiveToolFisik" />
+    <bpmn:sequenceFlow id="Flow_c8" sourceRef="Task_ReceiveToolFisik" targetRef="End_CheckoutDone" />
+    <bpmn:dataObjectReference id="DataObject_TransactionC" name="[Entity] Transaction (Status: COMPLETED)" dataObjectRef="DataObject_2" />
+    <bpmn:dataObject id="DataObject_2" />
+    <bpmn:dataObjectReference id="DataObject_ToolC" name="[Entity] Tool (Available &#38; Total Qty Turun)" dataObjectRef="DataObject_3" />
+    <bpmn:dataObject id="DataObject_3" />
+    <bpmn:dataObjectReference id="DataObject_TransactionR" name="[Entity] Transaction (Status: PENDING_RETURN)" dataObjectRef="DataObject_4" />
+    <bpmn:dataObject id="DataObject_4" />
+    <bpmn:dataObjectReference id="DataObject_ToolR" name="[Entity] Tool (Available Qty Turun, Total Tetap)" dataObjectRef="DataObject_5" />
+    <bpmn:dataObject id="DataObject_5" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Checkout">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Checkout" bpmnElement="Process_Checkout">
+      <bpmndi:BPMNShape id="Start_RequestTool_di" bpmnElement="Start_RequestTool">
+        <dc:Bounds x="177" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="153" y="138" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CheckPhysicalStock_di" bpmnElement="Task_CheckPhysicalStock">
+        <dc:Bounds x="295" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputCheckoutRequest_di" bpmnElement="Task_InputCheckoutRequest">
+        <dc:Bounds x="445" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TypeCheck_di" bpmnElement="Gateway_TypeCheck" isMarkerVisible="true">
+        <dc:Bounds x="620" y="95" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="612" y="145" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SystemConsumable_di" bpmnElement="Task_SystemConsumable">
+        <dc:Bounds x="745" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SystemReturnable_di" bpmnElement="Task_SystemReturnable">
+        <dc:Bounds x="745" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_MergeSystem_di" bpmnElement="Gateway_MergeSystem" isMarkerVisible="true">
+        <dc:Bounds x="920" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandoverFisik_di" bpmnElement="Task_HandoverFisik">
+        <dc:Bounds x="1045" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ReceiveToolFisik_di" bpmnElement="Task_ReceiveToolFisik">
+        <dc:Bounds x="1195" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CheckoutDone_di" bpmnElement="End_CheckoutDone">
+        <dc:Bounds x="1377" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1353" y="138" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_TransactionC_di" bpmnElement="DataObject_TransactionC">
+        <dc:Bounds x="662" y="295" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="644" y="345" width="73" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_ToolC_di" bpmnElement="DataObject_ToolC">
+        <dc:Bounds x="902" y="315" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="365" width="85" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_ToolR_di" bpmnElement="DataObject_ToolR">
+        <dc:Bounds x="872" y="455" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="856" y="505" width="69" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_TransactionR_di" bpmnElement="DataObject_TransactionR">
+        <dc:Bounds x="672" y="455" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="647" y="505" width="87" height="66" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_Task_SystemConsumable_DataObject_TransactionC_di" bpmnElement="Association_Task_SystemConsumable_DataObject_TransactionC">
+        <di:waypoint x="794" y="160" />
+        <di:waypoint x="681" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SystemConsumable_DataObject_ToolC_di" bpmnElement="Association_Task_SystemConsumable_DataObject_ToolC">
+        <di:waypoint x="795" y="160" />
+        <di:waypoint x="920" y="315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SystemReturnable_DataObject_TransactionR_di" bpmnElement="Association_Task_SystemReturnable_DataObject_TransactionR">
+        <di:waypoint x="798" y="300" />
+        <di:waypoint x="688" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Task_SystemReturnable_DataObject_ToolR_di" bpmnElement="Association_Task_SystemReturnable_DataObject_ToolR">
+        <di:waypoint x="790" y="300" />
+        <di:waypoint x="893" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c1_di" bpmnElement="Flow_c1">
+        <di:waypoint x="213" y="120" />
+        <di:waypoint x="295" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c2_di" bpmnElement="Flow_c2">
+        <di:waypoint x="395" y="120" />
+        <di:waypoint x="445" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c3_di" bpmnElement="Flow_c3">
+        <di:waypoint x="545" y="120" />
+        <di:waypoint x="620" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_cConsumable_di" bpmnElement="Flow_cConsumable">
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="745" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="677" y="95" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_cReturnable_di" bpmnElement="Flow_cReturnable">
+        <di:waypoint x="645" y="145" />
+        <di:waypoint x="645" y="260" />
+        <di:waypoint x="745" y="260" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="633" y="193" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c4_di" bpmnElement="Flow_c4">
+        <di:waypoint x="845" y="120" />
+        <di:waypoint x="920" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c5_di" bpmnElement="Flow_c5">
+        <di:waypoint x="845" y="260" />
+        <di:waypoint x="945" y="260" />
+        <di:waypoint x="945" y="145" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c6_di" bpmnElement="Flow_c6">
+        <di:waypoint x="970" y="120" />
+        <di:waypoint x="1045" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c7_di" bpmnElement="Flow_c7">
+        <di:waypoint x="1145" y="120" />
+        <di:waypoint x="1195" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_c8_di" bpmnElement="Flow_c8">
+        <di:waypoint x="1295" y="120" />
+        <di:waypoint x="1377" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

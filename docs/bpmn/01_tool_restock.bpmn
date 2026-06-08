@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Restock" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler">
+  <bpmn:collaboration id="Collaboration_Restock">
+    <bpmn:participant id="Participant_Bengkel" name="Proses Pengadaan (Restock)" processRef="Process_Restock" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Restock" name="Proses Restock" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Purchasing" name="Purchasing">
+        <bpmn:flowNodeRef>StartEvent_BuyTools</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HandoverToWarehouse</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Admin" name="Admin Gudang">
+        <bpmn:flowNodeRef>Task_ReceiveAndCheck</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputToSystem</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_RestockDone</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_BuyTools" name="Beli Alat Baru">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_HandoverToWarehouse" name="Kirim Barang &#38; Invoice ke Gudang">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ReceiveAndCheck" name="Terima &#38; Cek Fisik Barang">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_InputToSystem" name="Update Stok di Sistem">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="Association_Task_InputToSystem_DataObject_ToolEntity">
+        <bpmn:targetRef>DataObject_ToolEntity</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_RestockDone" name="Restock Selesai">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_BuyTools" targetRef="Task_HandoverToWarehouse" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_HandoverToWarehouse" targetRef="Task_ReceiveAndCheck" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_ReceiveAndCheck" targetRef="Task_InputToSystem" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_InputToSystem" targetRef="EndEvent_RestockDone" />
+    <bpmn:dataObjectReference id="DataObject_ToolEntity" name="[Entity] Tool (Total &#38; Available Qty Naik)" dataObjectRef="DataObject_1" />
+    <bpmn:dataObject id="DataObject_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Process_Restock">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_Restock" bpmnElement="Process_Restock">
+      <bpmndi:BPMNShape id="StartEvent_BuyTools_di" bpmnElement="StartEvent_BuyTools">
+        <dc:Bounds x="57" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandoverToWarehouse_di" bpmnElement="Task_HandoverToWarehouse">
+        <dc:Bounds x="175" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ReceiveAndCheck_di" bpmnElement="Task_ReceiveAndCheck">
+        <dc:Bounds x="325" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputToSystem_di" bpmnElement="Task_InputToSystem">
+        <dc:Bounds x="475" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_RestockDone_di" bpmnElement="EndEvent_RestockDone">
+        <dc:Bounds x="657" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_ToolEntity_di" bpmnElement="DataObject_ToolEntity">
+        <dc:Bounds x="507" y="170" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="93" y="70" />
+        <di:waypoint x="175" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="275" y="70" />
+        <di:waypoint x="325" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="425" y="70" />
+        <di:waypoint x="475" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="575" y="70" />
+        <di:waypoint x="657" y="70" />
+      </bpmndi:BPMNEdge>
+    
+      <bpmndi:BPMNEdge id="Association_Task_InputToSystem_DataObject_ToolEntity_di" bpmnElement="Association_Task_InputToSystem_DataObject_ToolEntity">
+        <di:waypoint x="525" y="110" />
+        <di:waypoint x="525" y="170" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
