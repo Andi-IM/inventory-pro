@@ -3,6 +3,7 @@
 
 import { cache } from 'react';
 import { query } from '@/lib/db';
+import { redis, flagCacheKey } from '@/lib/redis';
 
 /**
  * Get the base role of a user from the neon_auth.user table.
@@ -113,6 +114,12 @@ export async function hasPermission(userId: string, permission: string): Promise
 
 /**
  * Check if a dynamic feature flag is active in the database.
+ *
+ * Cache strategy (ADR-0011):
+ *  1. Superuser bypass — checked first, no cache needed.
+ *  2. Redis GET `feature_flag:{key}` — returns immediately on hit.
+ *  3. Postgres query on miss → stored in Redis with 60s TTL.
+ *  4. Redis errors are caught silently; Postgres remains the source of truth.
  */
 export async function isFeatureEnabled(key: string, userId?: string): Promise<boolean> {
   if (userId) {
@@ -122,12 +129,31 @@ export async function isFeatureEnabled(key: string, userId?: string): Promise<bo
     }
   }
 
+  // --- Redis cache layer ---
+  if (redis) {
+    try {
+      const cached = await redis.get(flagCacheKey(key));
+      if (cached !== null) {
+        return cached === 'true';
+      }
+    } catch (err) {
+      console.warn(`[Redis] cache read failed for flag "${key}":`, (err as Error).message);
+    }
+  }
+
+  // --- Postgres fallback ---
   const rows = await query<{ enabled: boolean }>(
     'SELECT enabled FROM public.feature_flags WHERE key = $1',
     [key]
   );
-  if (rows.length === 0) {
-    return false;
+  const enabled = rows.length > 0 ? rows[0].enabled : false;
+
+  // Populate cache for subsequent requests (fire-and-forget; TTL = 60s)
+  if (redis) {
+    redis.set(flagCacheKey(key), String(enabled), 'EX', 60).catch((err) => {
+      console.warn(`[Redis] cache write failed for flag "${key}":`, (err as Error).message);
+    });
   }
-  return rows[0].enabled;
+
+  return enabled;
 }

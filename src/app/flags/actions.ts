@@ -1,9 +1,13 @@
 'use server';
 
+// ADR: Adopt Redis Cache for Feature Flags
+// See: docs/decisions/0011-adopt-redis-cache-for-feature-flags.md
+
 import { query } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
+import { invalidateFlagCache } from '@/lib/redis';
 
 async function assertPermissionForAction(permission: string) {
   const { data: session } = await auth.getSession();
@@ -18,6 +22,8 @@ export async function toggleFeatureFlag(key: string, enabled: boolean) {
     'INSERT INTO public.feature_flags (key, enabled) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET enabled = $2',
     [key, enabled]
   );
+  // Evict Redis cache so the next request reads the fresh value immediately
+  await invalidateFlagCache(key);
   revalidatePath('/flags');
   revalidatePath('/');
 }
