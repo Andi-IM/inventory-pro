@@ -33,7 +33,7 @@ const checkConnection = (urlStr: string, timeout = 1000): Promise<boolean> => {
 
 describe("CamundaClient Integration Tests", () => {
   const baseUrl = process.env.CAMUNDA_REST_URL || "http://localhost:8080/engine-rest";
-  const client = new CamundaClient(baseUrl);
+  const client = new CamundaClient({ baseUrl, userId: "test-integration-user" });
 
   it("should check if Camunda REST API is running and search tasks", async () => {
     const isReachable = await checkConnection(baseUrl, 1000);

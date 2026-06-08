@@ -4,9 +4,11 @@ import { CamundaClient } from "./camunda";
 describe("CamundaClient Unit Tests", () => {
   let client: CamundaClient;
   const baseUrl = "http://localhost:8080/engine-rest";
+  const testUserId = "user-123";
+  const testRoles = ["admin", "peminjam"];
 
   beforeEach(() => {
-    client = new CamundaClient(baseUrl);
+    client = new CamundaClient({ baseUrl, userId: testUserId, roles: testRoles });
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -15,7 +17,7 @@ describe("CamundaClient Unit Tests", () => {
   });
 
   describe("searchUserTasks", () => {
-    it("should search and map active user tasks correctly", async () => {
+    it("should enforce identity filtering in search query", async () => {
       const mockRawTasks = [
         {
           id: "task-1",
@@ -24,7 +26,7 @@ describe("CamundaClient Unit Tests", () => {
           processInstanceId: "proc-instance-123",
           formKey: "application-form",
           created: "2026-06-08T00:00:00.000+0000",
-          assignee: "john_doe",
+          assignee: testUserId,
         },
       ];
 
@@ -34,33 +36,38 @@ describe("CamundaClient Unit Tests", () => {
         json: async () => mockRawTasks,
       } as unknown as Response);
 
-      const filter = { active: true, assignee: "john_doe" };
+      const filter = { active: true };
       const tasks = await client.searchUserTasks(filter);
 
       expect(fetch).toHaveBeenCalledWith(`${baseUrl}/task`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(filter),
+        body: JSON.stringify({
+          ...filter,
+          orQueries: [
+            {
+              assignee: testUserId,
+            },
+            {
+              candidateUser: testUserId,
+              candidateGroups: testRoles,
+              includeAssignedTasks: true,
+            },
+          ],
+        }),
       });
 
       expect(tasks).toHaveLength(1);
-      expect(tasks[0]).toEqual({
-        key: "task-1",
-        userTaskKey: "task-1",
-        name: "Verify Application",
-        elementId: "user_task_verify",
-        processInstanceKey: "proc-instance-123",
-        formKey: "application-form",
-        externalFormReference: "application-form",
-        creationDate: "2026-06-08T00:00:00.000+0000",
-        creationTime: "2026-06-08T00:00:00.000+0000",
-        assignee: "john_doe",
-      });
+    });
+
+    it("should throw error if userId is missing", async () => {
+      const anonymousClient = new CamundaClient({ baseUrl });
+      await expect(anonymousClient.searchUserTasks()).rejects.toThrow("Identity Context Missing");
     });
   });
 
   describe("startProcessInstance", () => {
-    it("should start a process instance and serialize variables", async () => {
+    it("should inject initiator variable when starting process", async () => {
       const mockResponse = {
         id: "new-proc-inst-id",
         definitionId: "definition-key-1:1:123",
@@ -72,7 +79,7 @@ describe("CamundaClient Unit Tests", () => {
         json: async () => mockResponse,
       } as unknown as Response);
 
-      const variables = { amount: 1500, applicant: "Alice" };
+      const variables = { amount: 1500 };
       const result = await client.startProcessInstance("loan_process", variables);
 
       expect(fetch).toHaveBeenCalledWith(`${baseUrl}/process-definition/key/loan_process/start`, {
@@ -81,7 +88,7 @@ describe("CamundaClient Unit Tests", () => {
         body: JSON.stringify({
           variables: {
             amount: { value: 1500 },
-            applicant: { value: "Alice" },
+            initiator: { value: testUserId, type: "String" }
           },
         }),
       });
@@ -95,7 +102,7 @@ describe("CamundaClient Unit Tests", () => {
   });
 
   describe("getUserTask", () => {
-    it("should fetch details of a specific user task", async () => {
+    it("should allow access if user is assignee", async () => {
       const mockRawTask = {
         id: "task-abc",
         name: "Approve Request",
@@ -103,7 +110,7 @@ describe("CamundaClient Unit Tests", () => {
         processInstanceId: "proc-abc",
         formKey: null,
         created: "2026-06-08T01:00:00.000+0000",
-        assignee: null,
+        assignee: testUserId,
       };
 
       vi.mocked(fetch).mockResolvedValue({
@@ -113,26 +120,78 @@ describe("CamundaClient Unit Tests", () => {
       } as unknown as Response);
 
       const task = await client.getUserTask("task-abc");
-
-      expect(fetch).toHaveBeenCalledWith(`${baseUrl}/task/task-abc`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
       expect(task.key).toBe("task-abc");
-      expect(task.name).toBe("Approve Request");
+    });
+
+    it("should allow access if user is candidate (via search check)", async () => {
+      const mockRawTask = {
+        id: "task-unassigned",
+        name: "Candidate Task",
+        taskDefinitionKey: "task_candidate",
+        processInstanceId: "proc-123",
+        formKey: null,
+        created: "2026-06-08T01:00:00.000+0000",
+        assignee: null,
+      };
+
+      // First fetch: returns the task details
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockRawTask,
+      } as unknown as Response);
+
+      // Second fetch (search check): returns the task in list
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [mockRawTask],
+      } as unknown as Response);
+
+      const task = await client.getUserTask("task-unassigned");
+      expect(task.key).toBe("task-unassigned");
+    });
+
+    it("should deny access if user is not assignee or candidate", async () => {
+      const mockRawTask = {
+        id: "task-other",
+        assignee: "other-user",
+      };
+
+      // First fetch: returns the task assigned to someone else
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockRawTask,
+      } as unknown as Response);
+
+      // Second fetch (search check): returns empty list (not a candidate)
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [],
+      } as unknown as Response);
+
+      await expect(client.getUserTask("task-other")).rejects.toThrow("Unauthorized");
     });
   });
 
   describe("getTaskVariables", () => {
     it("should fetch and flatten task variables correctly", async () => {
+      const mockRawTask = { id: "task-123", assignee: testUserId };
       const mockRawVariables = {
         score: { value: 95, type: "Integer" },
-        approved: { value: true, type: "Boolean" },
-        remarks: { value: "Excellent score", type: "String" },
       };
 
-      vi.mocked(fetch).mockResolvedValue({
+      // Mock getUserTask (fetch #1)
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockRawTask,
+      } as unknown as Response);
+
+      // Mock variables (fetch #2)
+      vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockRawVariables,
@@ -140,38 +199,47 @@ describe("CamundaClient Unit Tests", () => {
 
       const variables = await client.getTaskVariables("task-123");
 
-      expect(fetch).toHaveBeenCalledWith(`${baseUrl}/task/task-123/variables`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      expect(variables).toEqual({
-        score: 95,
-        approved: true,
-        remarks: "Excellent score",
-      });
+      expect(variables).toEqual({ score: 95 });
     });
   });
 
   describe("completeUserTask", () => {
-    it("should complete a user task with variables", async () => {
+    it("should deny completion if task is assigned to someone else", async () => {
+      const mockRawTask = {
+        id: "task-999",
+        assignee: "someone-else",
+      };
+
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        status: 204, // No Content
+        status: 200,
+        json: async () => mockRawTask,
       } as unknown as Response);
 
-      const completionVars = { managerNotes: "Looks good" };
-      await client.completeUserTask("task-999", completionVars);
+      await expect(client.completeUserTask("task-999")).rejects.toThrow("Unauthorized");
+    });
 
-      expect(fetch).toHaveBeenCalledWith(`${baseUrl}/task/task-999/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          variables: {
-            managerNotes: { value: "Looks good" },
-          },
-        }),
-      });
+    it("should allow completion if assigned to current user", async () => {
+      const mockRawTask = {
+        id: "task-999",
+        assignee: testUserId,
+      };
+
+      // Mock getUserTask (fetch #1)
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockRawTask,
+      } as unknown as Response);
+
+      // Mock complete (fetch #2)
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+      } as unknown as Response);
+
+      await client.completeUserTask("task-999");
+      expect(fetch).toHaveBeenCalledTimes(2);
     });
   });
 

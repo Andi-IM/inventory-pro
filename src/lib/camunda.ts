@@ -1,3 +1,7 @@
+// ADR: Adopt Camunda 7 REST Client & Identity-Bound Integration
+// See: docs/decisions/0003-adopt-camunda-7-rest-client.md
+// See: docs/decisions/0007-enforce-identity-bound-workflow-integration.md
+
 import { 
   Task, 
   ProcessInstance, 
@@ -8,9 +12,14 @@ import {
 
 export class CamundaClient {
   private baseUrl: string;
+  private userId?: string;
+  private roles: string[];
 
-  constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || process.env.CAMUNDA_REST_URL || "http://localhost:8080/engine-rest";
+  constructor(options: { baseUrl?: string; userId?: string; roles?: string[] } = {}) {
+    this.baseUrl = options.baseUrl || process.env.CAMUNDA_REST_URL || "http://localhost:8080/engine-rest";
+    this.userId = options.userId;
+    this.roles = options.roles || [];
+
     // Strip trailing slash if present
     if (this.baseUrl.endsWith("/")) {
       this.baseUrl = this.baseUrl.slice(0, -1);
@@ -101,12 +110,33 @@ export class CamundaClient {
   }
 
   /**
-   * Search for active user tasks
+   * Search for active user tasks with identity enforcement
    */
   async searchUserTasks(filter: SearchTasksFilter = {}): Promise<Task[]> {
+    if (!this.userId) {
+      throw new Error("Identity Context Missing: userId is required for searching tasks.");
+    }
+
+    // Enforce that the user can only see tasks where they are the assignee or a candidate
+    // This uses a complex query to include both direct assignments and group memberships
+    const identityFilter = {
+      ...filter,
+      orQueries: [
+        ...(filter.orQueries || []),
+        {
+          assignee: this.userId
+        },
+        {
+          candidateUser: this.userId,
+          candidateGroups: this.roles.length > 0 ? this.roles : undefined,
+          includeAssignedTasks: true
+        }
+      ]
+    };
+
     const rawTasks = await this.request<CamundaTaskResponse[]>("/task", {
       method: "POST",
-      body: JSON.stringify(filter),
+      body: JSON.stringify(identityFilter),
     });
 
     return Array.isArray(rawTasks) ? rawTasks.map(task => this.mapTask(task)) : [];
@@ -117,7 +147,11 @@ export class CamundaClient {
    */
   async startProcessInstance(processDefinitionKey: string, variables: Record<string, unknown> = {}): Promise<ProcessInstance> {
     const payload = {
-      variables: this.serializeVariables(variables)
+      variables: {
+        ...this.serializeVariables(variables),
+        // Automatically inject the initiator identity
+        initiator: { value: this.userId, type: "String" }
+      }
     };
 
     const raw = await this.request<{ id: string; definitionId: string }>(
@@ -136,19 +170,33 @@ export class CamundaClient {
   }
 
   /**
-   * Get task details
+   * Get task details with identity verification
    */
   async getUserTask(taskKey: string): Promise<Task> {
-    const raw = await this.request<CamundaTaskResponse>(`/task/${taskKey}`, {
+    const task = await this.request<CamundaTaskResponse>(`/task/${taskKey}`, {
       method: "GET",
     });
-    return this.mapTask(raw);
+
+    // Verification: Ensure the user is allowed to see this specific task
+    if (this.userId && task.assignee !== this.userId) {
+      // If not assigned, check candidate status (this is simplified, ideally 
+      // we'd use a more robust check if Camunda's GET /task/{id} doesn't enforce this)
+      const candidateCheck = await this.searchUserTasks({ taskId: taskKey });
+      if (candidateCheck.length === 0) {
+        throw new Error("Unauthorized: You do not have access to this task.");
+      }
+    }
+
+    return this.mapTask(task);
   }
 
   /**
-   * Get variables for a specific task
+   * Get variables for a specific task - inherits identity check from getUserTask
    */
   async getTaskVariables(taskKey: string): Promise<Record<string, unknown>> {
+    // First verify task access
+    await this.getUserTask(taskKey);
+
     const raw = await this.request<Record<string, CamundaVariableValue>>(`/task/${taskKey}/variables`, {
       method: "GET",
     });
@@ -156,9 +204,16 @@ export class CamundaClient {
   }
 
   /**
-   * Complete a user task with optional variables
+   * Complete a user task with identity verification
    */
   async completeUserTask(taskKey: string, variables: Record<string, unknown> = {}): Promise<void> {
+    // Verify the user is authorized for this task before completing
+    const task = await this.getUserTask(taskKey);
+
+    if (task.assignee && task.assignee !== this.userId) {
+      throw new Error(`Unauthorized: Task is assigned to ${task.assignee}, but you are ${this.userId}.`);
+    }
+
     const payload = {
       variables: this.serializeVariables(variables)
     };

@@ -23,7 +23,8 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 - [0003-adopt-camunda-7-rest-client.md](0003-adopt-camunda-7-rest-client.md) - Adopt Camunda 7 REST Client
 - [0004-adopt-neon-auth-for-authentication.md](0004-adopt-neon-auth-for-authentication.md) - Adopt Neon Auth for Authentication
 - [0005-adopt-playwright-for-e2e-testing.md](0005-adopt-playwright-for-e2e-testing.md) - Adopt Playwright for E2E Testing
-- [0006-adopt-dynamic-role-and-permission-based-authorization.md](0006-adopt-dynamic-role-and-permission-based-authorization.md) - Adopt Dynamic Role and Permission-Based Authorization
+- [0006-adopt-dynamic-role-and-permission-based-authorization.md](0006-adopt-dynamic-role-and-permission-based-authorization.md)
+- [0007-enforce-identity-bound-workflow-integration.md](0007-enforce-identity-bound-workflow-integration.md) - Adopt Dynamic Role and Permission-Based Authorization
 
 
 

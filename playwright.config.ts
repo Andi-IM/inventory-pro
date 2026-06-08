@@ -1,3 +1,6 @@
+// ADR: Adopt Playwright for E2E Testing
+// See: docs/decisions/0005-adopt-playwright-for-e2e-testing.md
+
 import { defineConfig, devices } from '@playwright/test';
 
 /**

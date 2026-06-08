@@ -1,3 +1,6 @@
+// ADR: Adopt Next.js with App Router and Bootstrap CSS
+// See: docs/decisions/0002-adopt-nextjs-app-router-bootstrap.md
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "bootstrap/dist/css/bootstrap.min.css";

@@ -1,3 +1,6 @@
+// ADR: Adopt Neon Auth for Authentication
+// See: docs/decisions/0004-adopt-neon-auth-for-authentication.md
+
 import { Pool } from '@neondatabase/serverless';
 
 if (!process.env.DATABASE_URL) {

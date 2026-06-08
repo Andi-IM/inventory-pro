@@ -1,3 +1,6 @@
+// ADR: Adopt Dynamic Role and Permission-Based Authorization
+// See: docs/decisions/0006-adopt-dynamic-role-and-permission-based-authorization.md
+
 import { query } from '@/lib/db';
 
 /**
