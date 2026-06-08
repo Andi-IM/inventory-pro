@@ -37,6 +37,7 @@ We will adopt Playwright for E2E testing:
 - Good, because targeting only Chromium keeps dependencies and runtimes minimal.
 - Good, because automatic server startup/shutdown reduces runner orchestration overhead.
 - Bad, because it adds new dependencies and browser binaries.
+- **Local Enforcement**: Due to CI infrastructure limitations (lack of live DB/Camunda), E2E tests are enforced locally via a Husky `pre-commit` hook instead of running in the main CI pipeline. This ensures high-quality builds without blocking CI.
 
 ## Implementation Plan
 
