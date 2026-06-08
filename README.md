@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextHerts Boilerplate
 
-## Getting Started
+A modern Next.js 16 (App Router) enterprise-grade boilerplate integrated with **Bootstrap CSS**, **Neon Auth** (managed Better Auth), a custom **Camunda 7 REST Client**, and a **dynamic database-driven authorization (RBAC + Fine-grained permission) system**.
 
-First, run the development server:
+---
+
+## 🚀 Key Features
+
+* **Authentication**: Seamless email/password registration and login handled via managed Neon Auth.
+  - Sign-ups are controlled by a code-level feature flag (`NEXT_PUBLIC_ALLOW_SIGN_UP`).
+  - Protected routes (e.g., `/account`) are secured using a Next.js 16-compatible middleware proxy (`proxy.ts`).
+* **Dynamic Authorization**: An advanced, database-controlled Role-Based Access Control (RBAC) and fine-grained user permission system:
+  - Base roles: `superuser`, `operator`, and `peminjam`.
+  - Custom overrides and role capability mappings can be adjusted at runtime without redeployments.
+  - Features system-wide feature flags managed dynamically in the database.
+* **Superuser Admin Panel**: A dedicated administrative dashboard at `/admin` (layout-protected) to manage registered users, customize role default permissions, assign user overrides, and toggle feature flags.
+* **Bootstrap CSS Styling**: Clean and premium responsive styling using Bootstrap 5.3. Loaded dynamically via a client hydration wrapper to prevent SSR hydration mismatches.
+* **Camunda 7 Client**: A lightweight, dependency-free TypeScript REST client (`src/lib/camunda.ts`) mapping engine schemas, process triggers, active task checks, and variable flattening.
+* **E2E & Unit Test Suites**: E2E tests using Playwright simulating browser interactions, alongside mockable Vitest unit/integration tests.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Framework**: Next.js 16.2.7 (App Router)
+* **Language**: TypeScript (strict rules, `eslint` configured)
+* **Styling**: Bootstrap 5.3.8
+* **Database Driver**: `@neondatabase/serverless` (connection pooling ready)
+* **Auth SDK**: `@neondatabase/auth` (Better Auth backend)
+* **Testing**: Playwright (E2E) & Vitest (Unit/Integration)
+
+---
+
+## ⚙️ Environment Configuration
+
+Copy `.env.example` to `.env.local` in the root directory and configure the required environment variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔌 Database Seeding
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project includes a tracked database seeding script `seed.js` to create tables and populate default users and permissions.
 
-## Learn More
+Run the seeding script:
+```bash
+node seed.js
+```
 
-To learn more about Next.js, take a look at the following resources:
+This script will:
+1. Create the custom authorization tables in the database schema:
+   - `public.feature_flags`
+   - `public.role_permissions`
+   - `public.user_permissions`
+2. Seed initial feature flags (`loan_module`, `user_management`) and default role-permission maps.
+3. Automatically register three default users via the Neon Auth API:
+   - **Super User**: `superuser@example.com` (Role: `superuser`, Password: `Password123!`)
+   - **Operator User**: `operator@example.com` (Role: `operator`, Password: `Password123!`)
+   - **Peminjam User**: `peminjam@example.com` (Role: `peminjam`, Password: `Password123!`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Promoting Users
+You can promote any existing registered user to the `superuser` role by passing their email as an argument to the seeding script:
+```bash
+node seed.js user@example.com
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🧪 Running Tests
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Unit & Integration Tests (Vitest)
+Unit and integration tests are executed using Vitest. Environment variables are loaded automatically into worker threads during test runs via configuration.
+```bash
+npm test
+```
+*Note: Playwright E2E tests are excluded from the Vitest search path in `vitest.config.ts`.*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### E2E Tests (Playwright)
+To execute browser-based E2E tests simulating layout interactions, form errors, and feature flag enforcement:
+```bash
+npm run test:e2e
+```
+*Note: E2E tests run against Chromium and automatically spin up or reuse the Next.js dev server.*
+
+### Code Quality (ESLint)
+```bash
+npm run lint
+```
+
+---
+
+## 📂 Architecture Decisions (ADR)
+
+All key design decisions are documented and tracked in the Architecture Decision Records (ADRs) inside the [docs/adr/](file:///d:/01_Projects/next-herts/docs/adr/) directory.
