@@ -25,12 +25,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ id:
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0">Tool Details</h1>
         <div className="d-flex gap-2">
-          <Link href="/tools" className="btn btn-outline-light">
+          <Link href="/dashboard/tools" className="btn btn-outline-light">
             Back to List
           </Link>
           {canManage && (
             <>
-              <Link href={`/tools/${tool.id}/edit`} className="btn btn-warning">
+              <Link href={`/dashboard/tools/${tool.id}/edit`} className="btn btn-warning">
                 Edit
               </Link>
               <form action={deleteToolAction.bind(null, tool.id)}>

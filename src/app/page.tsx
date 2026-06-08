@@ -39,7 +39,7 @@ export default async function Home() {
           </div>
           <div className="d-flex align-items-center gap-4">
             <nav className="d-flex gap-4">
-              <Link href="/tools" className="text-white-50 text-decoration-none hover-white transition-all fw-semibold">Tools</Link>
+              <Link href="/dashboard/tools" className="text-white-50 text-decoration-none hover-white transition-all fw-semibold">Tools</Link>
               <a href="https://nextjs.org/docs" className="text-white-50 text-decoration-none hover-white transition-all">Docs</a>
               <a href="https://getbootstrap.com" className="text-white-50 text-decoration-none hover-white transition-all">Bootstrap</a>
             </nav>
@@ -52,17 +52,17 @@ export default async function Home() {
                 </span>
                 
                 {await isFeatureEnabled('user_management', user.id) && await hasPermission(user.id, 'user:manage') && (
-                  <Link href="/users" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                  <Link href="/dashboard/users" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
                     Users
                   </Link>
                 )}
                 {await isFeatureEnabled('role_management', user.id) && await hasPermission(user.id, 'role:manage') && (
-                  <Link href="/roles" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                  <Link href="/dashboard/roles" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
                     Roles
                   </Link>
                 )}
                 {await isFeatureEnabled('flag_management', user.id) && await hasPermission(user.id, 'flag:manage') && (
-                  <Link href="/flags" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                  <Link href="/dashboard/flags" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
                     Flags
                   </Link>
                 )}

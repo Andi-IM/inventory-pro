@@ -70,10 +70,10 @@ export default async function DashboardLayout({ children, pageTitle }: { childre
 
   // Build nav items from resolved results
   const navItems = [];
-  if (showTools)  navItems.push({ href: '/tools', label: 'Tools', icon: Icons.tools });
-  if (showUsers)  navItems.push({ href: '/users', label: 'Users', icon: Icons.users });
-  if (showRoles)  navItems.push({ href: '/roles', label: 'Roles', icon: Icons.roles });
-  if (showFlags)  navItems.push({ href: '/flags', label: 'Feature Flags', icon: Icons.flags });
+  if (showTools)  navItems.push({ href: '/dashboard/tools', label: 'Tools', icon: Icons.tools });
+  if (showUsers)  navItems.push({ href: '/dashboard/users', label: 'Users', icon: Icons.users });
+  if (showRoles)  navItems.push({ href: '/dashboard/roles', label: 'Roles', icon: Icons.roles });
+  if (showFlags)  navItems.push({ href: '/dashboard/flags', label: 'Feature Flags', icon: Icons.flags });
 
   return (
     <div className="dashboard-root">
