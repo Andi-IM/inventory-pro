@@ -12,7 +12,8 @@
     "test:integration": "vitest run integration.test.ts",
     "test:e2e": "playwright test",
     "release": "semantic-release",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-neon": "^7.8.0",

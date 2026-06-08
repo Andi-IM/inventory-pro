@@ -58,7 +58,7 @@ export async function getRolePermissions(role: string): Promise<string[]> {
         where: { role },
         select: { permission: true },
       });
-      return rows.map((r) => r.permission);
+      return rows.map((r: { permission: string }) => r.permission);
     },
     ['db_role_permissions', role],
     { tags: [`role_permissions_${role}`] }
@@ -75,7 +75,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
         where: { userId },
         select: { permission: true },
       });
-      return rows.map((r) => r.permission);
+      return rows.map((r: { permission: string }) => r.permission);
     },
     ['db_user_permissions', userId],
     { tags: [`user_permissions_${userId}`] }
@@ -93,7 +93,7 @@ export async function getAvailableRoles(): Promise<string[]> {
         distinct: ['role'],
         orderBy: { role: 'asc' },
       });
-      const roles = rows.map((r) => r.role);
+      const roles = rows.map((r: { role: string }) => r.role);
       if (!roles.includes('superuser')) {
         roles.push('superuser');
       }
@@ -114,7 +114,7 @@ export async function getAvailablePermissions(): Promise<string[]> {
         prisma.rolePermission.findMany({ select: { permission: true }, distinct: ['permission'] }),
         prisma.userPermission.findMany({ select: { permission: true }, distinct: ['permission'] })
       ]);
-      const allPerms = new Set([...rolePerms.map(r => r.permission), ...userPerms.map(r => r.permission)]);
+      const allPerms = new Set([...rolePerms.map((r: { permission: string }) => r.permission), ...userPerms.map((r: { permission: string }) => r.permission)]);
       return Array.from(allPerms).sort();
     },
     ['db_available_permissions'],
