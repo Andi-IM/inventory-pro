@@ -7,7 +7,6 @@ import { query } from '@/lib/db';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
-import { invalidateFlagCache } from '@/lib/redis';
 
 async function assertPermissionForAction(permission: string) {
   const { data: session } = await auth.getSession();
@@ -22,8 +21,6 @@ export async function toggleFeatureFlag(key: string, enabled: boolean) {
     'INSERT INTO public.feature_flags (key, enabled) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET enabled = $2',
     [key, enabled]
   );
-  // Evict Redis cache so the next request reads the fresh value immediately
-  await invalidateFlagCache(key);
   revalidateTag('feature_flags', 'max');
   revalidatePath('/flags');
   revalidatePath('/');

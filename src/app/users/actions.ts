@@ -4,7 +4,6 @@ import { query } from '@/lib/db';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
-import { invalidateUserRoleCache } from '@/lib/redis';
 
 async function assertPermissionForAction(permission: string) {
   const { data: session } = await auth.getSession();
@@ -16,7 +15,6 @@ async function assertPermissionForAction(permission: string) {
 export async function updateUserRole(userId: string, role: string) {
   await assertPermissionForAction('user:manage');
   await query('UPDATE neon_auth.user SET role = $1 WHERE id = $2', [role, userId]);
-  await invalidateUserRoleCache(userId);
   revalidateTag(`user_role_${userId}`, 'max');
   revalidatePath('/users');
 }

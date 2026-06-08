@@ -1,10 +1,14 @@
 ---
-status: accepted
+title: Adopt Redis Cache for Feature Flags
 date: 2026-06-08
-decision-makers: Developer, User
+status: superseded
 ---
 
 # Adopt Redis Cache for Feature Flags
+
+## Status
+
+**Superseded** by ADR-0012 (Adopt Stateless JWT Authorization) and Next.js internal Server Caching (`unstable_cache`).
 
 ## Context and Problem Statement
 
