@@ -60,3 +60,4 @@ We will adopt a dynamic, database-driven Role-Based Access Control (RBAC) and pe
 - [x] Authorization helpers implemented in `src/lib/auth/authorization.ts`.
 - [x] Integration and unit tests covering permission checks written and passing.
 - [x] Admin management pages for superusers implemented under `src/app/admin/` and protected.
+- [x] Role dropdown in `/users` is dynamically populated from `public.role_permissions` via `getAvailableRoles()` — no hardcoded role list in UI.

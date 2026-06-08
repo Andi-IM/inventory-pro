@@ -21,6 +21,28 @@ vi.mock("@/lib/auth/server", () => ({
   },
 }));
 
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(() => ({
+    set: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+  })),
+}));
+
+vi.mock("@/lib/db", () => ({
+  query: vi.fn(async () => []),
+}));
+
+vi.mock("@/lib/auth/authorization", () => ({
+  getUserRole: vi.fn(async () => 'peminjam'),
+  getUserPermissions: vi.fn(async () => []),
+  getRolePermissions: vi.fn(async () => []),
+}));
+
+vi.mock("@/lib/auth/jwt", () => ({
+  signAuthState: vi.fn(async () => 'mock-jwt-token'),
+}));
+
 describe("Auth Server Actions Unit Tests", () => {
   beforeEach(() => {
     vi.resetAllMocks();

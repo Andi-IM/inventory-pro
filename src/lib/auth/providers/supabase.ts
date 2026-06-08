@@ -1,0 +1,103 @@
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { AuthAdapter, AuthSession, AuthResponse } from '../AuthAdapter';
+
+export async function createClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignored in Server Components
+          }
+        },
+      },
+    }
+  );
+}
+
+export const supabaseAdapter: AuthAdapter = {
+  getSession: async (): Promise<AuthResponse<AuthSession>> => {
+    const supabase = await createClient();
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      return { data: null, error: error ? { message: error.message } : null };
+    }
+
+    const authSession: AuthSession = {
+      user: {
+        id: session.user.id,
+        email: session.user.email!,
+        name: session.user.user_metadata?.name || null,
+        role: session.user.user_metadata?.role,
+      }
+    };
+    return { data: authSession, error: null };
+  },
+  
+  signOut: async (): Promise<void> => {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  },
+  
+  signUp: {
+    email: async (credentials): Promise<AuthResponse<{ user: any }>> => {
+      const supabase = await createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: {
+            name: credentials.name,
+          }
+        }
+      });
+      
+      if (!error && data.user) {
+        // Create user in public.users to keep Prisma schema relations intact
+        try {
+          const { prisma } = await import('@/lib/db');
+          await prisma.user.upsert({
+            where: { id: data.user.id },
+            update: { name: credentials.name, email: credentials.email },
+            create: { id: data.user.id, email: credentials.email, name: credentials.name },
+          });
+        } catch (dbError) {
+          console.error("Failed to sync user to public.users:", dbError);
+        }
+      }
+
+      return { data: data.user ? { user: data.user } : null, error: error ? { message: error.message } : null };
+    }
+  },
+  
+  signIn: {
+    email: async (credentials): Promise<AuthResponse<{ session: any }>> => {
+      const supabase = await createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
+      return { data: data.session ? { session: data.session } : null, error: error ? { message: error.message } : null };
+    }
+  },
+  
+  handler: () => {
+    return {
+      GET: async () => new Response("Supabase SSR does not need this handler", { status: 200 }),
+      POST: async () => new Response("Supabase SSR does not need this handler", { status: 200 }),
+    };
+  },
+};
