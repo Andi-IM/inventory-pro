@@ -30,6 +30,12 @@ vi.mock("next/headers", () => ({
 }));
 
 vi.mock("@/lib/db", () => ({
+  prisma: {
+    user: {
+      findUnique: vi.fn(),
+    },
+    $queryRawUnsafe: vi.fn(async () => []),
+  },
   query: vi.fn(async () => []),
 }));
 
