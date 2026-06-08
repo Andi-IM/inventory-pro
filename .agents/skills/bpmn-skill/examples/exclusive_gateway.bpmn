@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Decision" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_WithDecision" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Order Received">
+      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_CheckInventory" name="Check Inventory">
+      <bpmn:incoming>Flow_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_02</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Inventory Available?">
+      <bpmn:incoming>Flow_02</bpmn:incoming>
+      <bpmn:outgoing>Flow_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Activity_ProcessPayment" name="Process Payment">
+      <bpmn:incoming>Flow_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_03</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_NotifyCustomer" name="Notify Customer">
+      <bpmn:incoming>Flow_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_04</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ShipOrder" name="Ship Order">
+      <bpmn:incoming>Flow_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_05</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Success" name="Order Shipped">
+      <bpmn:incoming>Flow_05</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Fail" name="Order Cancelled">
+      <bpmn:incoming>Flow_04</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="StartEvent_1" targetRef="Activity_CheckInventory"/>
+    <bpmn:sequenceFlow id="Flow_02" sourceRef="Activity_CheckInventory" targetRef="Gateway_Decision"/>
+    <bpmn:sequenceFlow id="Flow_Yes" name="Yes" sourceRef="Gateway_Decision" targetRef="Activity_ProcessPayment"/>
+    <bpmn:sequenceFlow id="Flow_No" name="No" sourceRef="Gateway_Decision" targetRef="Activity_NotifyCustomer"/>
+    <bpmn:sequenceFlow id="Flow_03" sourceRef="Activity_ProcessPayment" targetRef="Activity_ShipOrder"/>
+    <bpmn:sequenceFlow id="Flow_04" sourceRef="Activity_NotifyCustomer" targetRef="EndEvent_Fail"/>
+    <bpmn:sequenceFlow id="Flow_05" sourceRef="Activity_ShipOrder" targetRef="EndEvent_Success"/>
+  </bpmn:process>
+</bpmn:definitions>
