@@ -58,6 +58,21 @@ export async function getAvailableRoles(): Promise<string[]> {
 }
 
 /**
+ * Get all known permissions from the system — a union of permissions
+ * assigned to roles and those granted directly to users.
+ * Used to populate searchable datalist suggestions in admin UI.
+ */
+export async function getAvailablePermissions(): Promise<string[]> {
+  const rows = await query<{ permission: string }>(
+    `SELECT DISTINCT permission FROM public.role_permissions
+     UNION
+     SELECT DISTINCT permission FROM public.user_permissions
+     ORDER BY permission ASC`
+  );
+  return rows.map((r) => r.permission);
+}
+
+/**
  * Check if a user belongs to a specific role (or is a superuser).
  */
 export async function hasRole(userId: string, role: string): Promise<boolean> {

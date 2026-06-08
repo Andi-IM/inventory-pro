@@ -1,12 +1,17 @@
 import { query } from '@/lib/db';
+import { getAvailableRoles, getAvailablePermissions } from '@/lib/auth/authorization';
 import { addRolePermission, removeRolePermission } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RolePermissionsAdmin() {
-  const mappings = await query<{ role: string; permission: string }>(
-    'SELECT role, permission FROM public.role_permissions ORDER BY role ASC, permission ASC'
-  );
+  const [mappings, availableRoles, availablePermissions] = await Promise.all([
+    query<{ role: string; permission: string }>(
+      'SELECT role, permission FROM public.role_permissions ORDER BY role ASC, permission ASC'
+    ),
+    getAvailableRoles(),
+    getAvailablePermissions(),
+  ]);
 
   // Group permissions by role
   const roleGroups: Record<string, string[]> = {};
@@ -35,25 +40,52 @@ export default async function RolePermissionsAdmin() {
             await addRolePermission(role, permission);
           }
         }} className="row g-3">
+
+          {/* Role — searchable combobox */}
           <div className="col-md-5">
-            <input 
-              name="role" 
-              type="text" 
-              required 
+            <label htmlFor="role-input" className="form-label text-white-50 small mb-1">
+              Role
+            </label>
+            <input
+              id="role-input"
+              name="role"
+              type="text"
+              list="roles-datalist"
+              required
+              autoComplete="off"
               placeholder="e.g. operator, peminjam, audit"
               className="form-control form-control-sm bg-dark text-white border-secondary border-opacity-50"
             />
+            <datalist id="roles-datalist">
+              {availableRoles.map((r) => (
+                <option key={r} value={r} />
+              ))}
+            </datalist>
           </div>
+
+          {/* Permission — searchable combobox */}
           <div className="col-md-5">
-            <input 
-              name="permission" 
-              type="text" 
-              required 
+            <label htmlFor="permission-input" className="form-label text-white-50 small mb-1">
+              Permission
+            </label>
+            <input
+              id="permission-input"
+              name="permission"
+              type="text"
+              list="permissions-datalist"
+              required
+              autoComplete="off"
               placeholder="e.g. loan:approve, user:delete"
               className="form-control form-control-sm bg-dark text-white border-secondary border-opacity-50"
             />
+            <datalist id="permissions-datalist">
+              {availablePermissions.map((p) => (
+                <option key={p} value={p} />
+              ))}
+            </datalist>
           </div>
-          <div className="col-md-2">
+
+          <div className="col-md-2 d-flex align-items-end">
             <button type="submit" className="btn btn-primary btn-sm w-100 fw-semibold rounded-2">
               Assign
             </button>
@@ -75,14 +107,14 @@ export default async function RolePermissionsAdmin() {
                 </div>
                 <ul className="list-group list-group-flush bg-transparent mb-0">
                   {permissions.map((perm) => (
-                    <li 
-                      key={perm} 
+                    <li
+                      key={perm}
                       className="list-group-item bg-transparent text-white border-secondary border-opacity-10 d-flex justify-content-between align-items-center px-0 py-2 small"
                     >
                       <code>{perm}</code>
                       <form action={removeRolePermission.bind(null, role, perm)}>
-                        <button 
-                          type="submit" 
+                        <button
+                          type="submit"
                           className="btn btn-outline-danger btn-xs px-2 py-1 rounded-2"
                           style={{ fontSize: '0.75rem' }}
                         >
@@ -100,3 +132,4 @@ export default async function RolePermissionsAdmin() {
     </div>
   );
 }
+
