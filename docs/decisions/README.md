@@ -20,3 +20,5 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 
 - [2026-06-08-adopt-architecture-decision-records.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-architecture-decision-records.md) - Adopt Architecture Decision Records (ADR)
 - [2026-06-08-adopt-nextjs-app-router-bootstrap.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-nextjs-app-router-bootstrap.md) - Adopt Next.js with App Router and Bootstrap CSS
+- [2026-06-08-adopt-camunda-7-rest-client.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-camunda-7-rest-client.md) - Adopt Camunda 7 REST Client
+
