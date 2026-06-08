@@ -35,7 +35,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: postgres://user:password@localhost:5432/db
-          NEON_AUTH_COOKIE_SECRET: dummy_secret_for_ci_build_only
+          NEON_AUTH_COOKIE_SECRET: dummy_secret_for_ci_build_only_must_be_32_chars_long
           NEON_AUTH_BASE_URL: http://localhost:3000
 
       - name: Install Playwright Browsers
