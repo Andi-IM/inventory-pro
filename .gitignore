@@ -36,9 +36,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
+
+.certs
 
 # typescript
 *.tsbuildinfo
@@ -47,3 +50,5 @@ next-env.d.ts
 # seed script
 /seed.js
 /seed.ts
+
+/src/generated/prisma
