@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
+import { getUserRole } from "@/lib/auth/authorization";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,7 @@ async function signOut() {
 export default async function Home() {
   const { data: session } = await auth.getSession();
   const user = session?.user;
+  const role = user ? await getUserRole(user.id) : null;
 
   return (
     <main className="min-vh-100 bg-dark text-white d-flex flex-column justify-content-between">
@@ -47,6 +49,11 @@ export default async function Home() {
                 <span className="small text-white-50 d-none d-sm-inline">
                   Hi, <strong className="text-white">{user.name}</strong>
                 </span>
+                {role === 'superuser' && (
+                  <Link href="/admin" className="btn btn-outline-warning btn-sm px-3 rounded-2 fw-semibold">
+                    Admin Console
+                  </Link>
+                )}
                 <form action={signOut}>
                   <button type="submit" className="btn btn-outline-danger btn-sm px-3 rounded-2 fw-semibold">
                     Sign Out
