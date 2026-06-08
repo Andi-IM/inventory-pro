@@ -28,9 +28,13 @@ jobs:
 
       - name: Unit Tests (Vitest)
         run: npm run test
+        env:
+          DATABASE_URL: postgres://user:password@localhost:5432/db
 
       - name: Build
         run: npm run build
+        env:
+          DATABASE_URL: postgres://user:password@localhost:5432/db
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
