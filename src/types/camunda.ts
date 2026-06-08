@@ -44,6 +44,8 @@ export interface SearchTasksFilter {
   assignee?: string;
   candidateGroups?: string[];
   candidateUser?: string;
+  orQueries?: SearchTasksFilter[];
+  taskId?: string;
 }
 
 export interface RestExceptionResponse {
