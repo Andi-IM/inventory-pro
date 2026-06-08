@@ -77,7 +77,14 @@ export async function hasPermission(userId: string, permission: string): Promise
 /**
  * Check if a dynamic feature flag is active in the database.
  */
-export async function isFeatureEnabled(key: string): Promise<boolean> {
+export async function isFeatureEnabled(key: string, userId?: string): Promise<boolean> {
+  if (userId) {
+    const role = await getUserRole(userId);
+    if (role === 'superuser') {
+      return true;
+    }
+  }
+
   const rows = await query<{ enabled: boolean }>(
     'SELECT enabled FROM public.feature_flags WHERE key = $1',
     [key]

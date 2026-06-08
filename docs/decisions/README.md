@@ -26,6 +26,7 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 - [0006-adopt-dynamic-role-and-permission-based-authorization.md](0006-adopt-dynamic-role-and-permission-based-authorization.md) - Adopt Dynamic Role and Permission-Based Authorization
 - [0007-enforce-identity-bound-workflow-integration.md](0007-enforce-identity-bound-workflow-integration.md) - Enforce Identity-Bound Workflow Integration
 - [0008-adopt-conventional-commits-and-automated-semantic-versioning.md](0008-adopt-conventional-commits-and-automated-semantic-versioning.md) - Adopt Conventional Commits and Automated Semantic Versioning
+- [0009-implement-tool-management-module.md](0009-implement-tool-management-module.md) - Implement Tool Management Module using Server Actions
 
 
 
