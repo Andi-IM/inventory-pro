@@ -1,17 +1,28 @@
-// ADR: Adopt Neon Auth for Authentication
-// See: docs/decisions/0004-adopt-neon-auth-for-authentication.md
+// ADR: Adopt Database Agnostic Architecture
+// See: docs/decisions/0012-adopt-database-agnostic-architecture.md
 
-import { Pool } from '@neondatabase/serverless';
+import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is missing');
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
-export async function query<T = unknown>(text: string, params?: unknown[]): Promise<T[]> {
-  const res = await pool.query(text, params);
-  return res.rows;
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+export async function query<T = unknown>(text: string, params: unknown[] = []): Promise<T[]> {
+  // Legacy wrapper to keep unmigrated code working during the transition
+  // Note: Prisma uses $1, $2 syntax for Postgres, which matches our existing raw queries.
+  return prisma.$queryRawUnsafe<T[]>(text, ...params);
 }

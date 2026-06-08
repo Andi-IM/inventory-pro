@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  role          String    @default("peminjam")
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  permissions   UserPermission[]
+
+  @@map("users")
+}
+
+model UserPermission {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  permission String
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permission])
+  @@map("user_permissions")
+}
+
+model RolePermission {
+  id         String   @id @default(cuid())
+  role       String
+  permission String
+
+  @@unique([role, permission])
+  @@map("role_permissions")
+}
+
+model FeatureFlag {
+  key       String   @id
+  enabled   Boolean  @default(false)
+
+  @@map("feature_flags")
+}

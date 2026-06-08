@@ -26,8 +26,8 @@ export async function signInWithEmail(
 
   // --- Stateless JWT Authorization Generation ---
   // If the user signed in successfully, generate the auth state JWT
-  if (data?.user) {
-    const userId = data.user.id;
+  if (data?.session?.user) {
+    const userId = data.session.user.id;
     const role = await getUserRole(userId);
     
     // Aggregate all permissions

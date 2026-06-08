@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { getAvailableRoles } from '@/lib/auth/authorization';
 import { updateUserRole, addUserPermission, removeUserPermission } from './actions';
 
@@ -6,22 +6,24 @@ export const dynamic = 'force-dynamic';
 
 export default async function UserManagementAdmin() {
   const [users, overrides, availableRoles] = await Promise.all([
-    query<{ id: string; name: string | null; email: string; role: string | null }>(
-      'SELECT id, name, email, role FROM neon_auth.user ORDER BY name ASC, email ASC'
-    ),
-    query<{ user_id: string; permission: string }>(
-      'SELECT user_id, permission FROM public.user_permissions ORDER BY permission ASC'
-    ),
+    prisma.user.findMany({
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: [{ name: 'asc' }, { email: 'asc' }]
+    }),
+    prisma.userPermission.findMany({
+      select: { userId: true, permission: true },
+      orderBy: { permission: 'asc' }
+    }),
     getAvailableRoles(),
   ]);
 
-  // Group overrides by user_id
+  // Group overrides by userId
   const userOverrides: Record<string, string[]> = {};
   overrides.forEach((o) => {
-    if (!userOverrides[o.user_id]) {
-      userOverrides[o.user_id] = [];
+    if (!userOverrides[o.userId]) {
+      userOverrides[o.userId] = [];
     }
-    userOverrides[o.user_id].push(o.permission);
+    userOverrides[o.userId].push(o.permission);
   });
 
   return (

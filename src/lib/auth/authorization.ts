@@ -4,7 +4,7 @@
 import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { unstable_cache } from 'next/cache';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { verifyAuthState } from './jwt';
 
 /**
@@ -37,11 +37,11 @@ export const getUserRole = cache(async function getUserRole(userId: string): Pro
   // --- Next.js Data Cache Fallback ---
   return unstable_cache(
     async () => {
-      const rows = await query<{ role: string | null }>(
-        'SELECT role FROM neon_auth.user WHERE id = $1',
-        [userId]
-      );
-      return (rows.length === 0 || !rows[0].role) ? 'peminjam' : rows[0].role;
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+      return (!user || !user.role) ? 'peminjam' : user.role;
     },
     ['db_user_role', userId],
     { tags: [`user_role_${userId}`] }
@@ -54,10 +54,10 @@ export const getUserRole = cache(async function getUserRole(userId: string): Pro
 export async function getRolePermissions(role: string): Promise<string[]> {
   return unstable_cache(
     async () => {
-      const rows = await query<{ permission: string }>(
-        'SELECT permission FROM public.role_permissions WHERE role = $1',
-        [role]
-      );
+      const rows = await prisma.rolePermission.findMany({
+        where: { role },
+        select: { permission: true },
+      });
       return rows.map((r) => r.permission);
     },
     ['db_role_permissions', role],
@@ -71,10 +71,10 @@ export async function getRolePermissions(role: string): Promise<string[]> {
 export async function getUserPermissions(userId: string): Promise<string[]> {
   return unstable_cache(
     async () => {
-      const rows = await query<{ permission: string }>(
-        'SELECT permission FROM public.user_permissions WHERE user_id = $1',
-        [userId]
-      );
+      const rows = await prisma.userPermission.findMany({
+        where: { userId },
+        select: { permission: true },
+      });
       return rows.map((r) => r.permission);
     },
     ['db_user_permissions', userId],
@@ -88,9 +88,11 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
 export async function getAvailableRoles(): Promise<string[]> {
   return unstable_cache(
     async () => {
-      const rows = await query<{ role: string }>(
-        'SELECT DISTINCT role FROM public.role_permissions ORDER BY role ASC'
-      );
+      const rows = await prisma.rolePermission.findMany({
+        select: { role: true },
+        distinct: ['role'],
+        orderBy: { role: 'asc' },
+      });
       const roles = rows.map((r) => r.role);
       if (!roles.includes('superuser')) {
         roles.push('superuser');
@@ -108,13 +110,12 @@ export async function getAvailableRoles(): Promise<string[]> {
 export async function getAvailablePermissions(): Promise<string[]> {
   return unstable_cache(
     async () => {
-      const rows = await query<{ permission: string }>(
-        `SELECT DISTINCT permission FROM public.role_permissions
-         UNION
-         SELECT DISTINCT permission FROM public.user_permissions
-         ORDER BY permission ASC`
-      );
-      return rows.map((r) => r.permission);
+      const [rolePerms, userPerms] = await Promise.all([
+        prisma.rolePermission.findMany({ select: { permission: true }, distinct: ['permission'] }),
+        prisma.userPermission.findMany({ select: { permission: true }, distinct: ['permission'] })
+      ]);
+      const allPerms = new Set([...rolePerms.map(r => r.permission), ...userPerms.map(r => r.permission)]);
+      return Array.from(allPerms).sort();
     },
     ['db_available_permissions'],
     { tags: ['available_permissions'] }
@@ -182,11 +183,11 @@ export async function isFeatureEnabled(key: string, userId?: string): Promise<bo
   // --- Next.js Data Cache Fallback ---
   return unstable_cache(
     async () => {
-      const rows = await query<{ enabled: boolean }>(
-        'SELECT enabled FROM public.feature_flags WHERE key = $1',
-        [key]
-      );
-      return rows.length > 0 ? rows[0].enabled : false;
+      const flag = await prisma.featureFlag.findUnique({
+        where: { key },
+        select: { enabled: true },
+      });
+      return flag ? flag.enabled : false;
     },
     ['db_feature_flag', key],
     { tags: ['feature_flags'] }
