@@ -1,10 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-
-export interface AuthState {
-  role: string;
-  permissions: string[];
-  flags: Record<string, boolean>;
-}
+import { AuthState } from '@/types/auth';
 
 // Ensure secret is long enough. NEON_AUTH_COOKIE_SECRET is base64 encoded typically, 
 // so we'll just use it directly or fallback to a default (only for dev, but it should exist).

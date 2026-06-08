@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { AuthAdapter, AuthSession, AuthResponse } from '../AuthAdapter';
+import { AuthAdapter, AuthSession, AuthResponse } from '@/types/auth';
 
 export async function createClient() {
   const cookieStore = await cookies();

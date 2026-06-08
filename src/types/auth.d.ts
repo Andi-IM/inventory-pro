@@ -1,10 +1,18 @@
+export interface AuthState {
+  role: string;
+  permissions: string[];
+  flags: Record<string, boolean>;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role?: string;
+}
+
 export interface AuthSession {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-    role?: string;
-  };
+  user: AuthUser;
 }
 
 export interface AuthResponse<T> {
