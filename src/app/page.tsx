@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
-import { isFeatureEnabled, hasPermission } from "@/lib/auth/authorization";
 
 export const dynamic = 'force-dynamic';
 
