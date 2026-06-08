@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getTools, getToolById, createTool, updateTool, deleteTool } from './tools';
 
 // Mock the db module
@@ -93,7 +93,7 @@ describe('Tools Data Access Layer', () => {
       const newTool = { ...mockTools[0], id: 'new-tool-id', description: null };
       vi.mocked(query).mockResolvedValueOnce([newTool]);
 
-      const result = await createTool({
+      await createTool({
         name: 'Hammer',
         description: null,
         status: 'available',

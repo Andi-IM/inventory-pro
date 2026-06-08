@@ -7,11 +7,17 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "prisma/seed.js",
+    "scripts/**",
+    "commitlint.config.mjs",
+    "eslint.config.mjs",
+    "next.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
   ]),
 ]);
 

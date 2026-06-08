@@ -2,9 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, 'feature/*', 'fix/*', 'refactor/*' ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main]
 
 jobs:
   build-and-test:
@@ -26,6 +24,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Type Checking
+        run: npm run typecheck
+      
       - name: Unit Tests (Vitest)
         run: npm run test
         env:

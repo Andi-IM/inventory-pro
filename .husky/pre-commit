@@ -1,2 +1,4 @@
 npm test
+npm run lint
+npm run typecheck
 npm run test:e2e

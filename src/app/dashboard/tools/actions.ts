@@ -36,8 +36,8 @@ export async function createToolAction(formData: FormData) {
     status: status || 'available',
   });
 
-  revalidatePath('/tools');
-  redirect('/tools');
+  revalidatePath('/dashboard/tools');
+  redirect('/dashboard/tools');
 }
 
 export async function updateToolAction(id: string, formData: FormData) {
@@ -57,14 +57,14 @@ export async function updateToolAction(id: string, formData: FormData) {
     status,
   });
 
-  revalidatePath('/tools');
-  revalidatePath(`/tools/${id}`);
-  redirect('/tools');
+  revalidatePath('/dashboard/tools');
+  revalidatePath(`/dashboard/tools/${id}`);
+  redirect('/dashboard/tools');
 }
 
 export async function deleteToolAction(id: string) {
   await assertAuthorized();
   await deleteTool(id);
-  revalidatePath('/tools');
-  redirect('/tools');
+  revalidatePath('/dashboard/tools');
+  redirect('/dashboard/tools');
 }

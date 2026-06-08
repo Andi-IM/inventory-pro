@@ -17,7 +17,7 @@ async function getCachedAuthState() {
     const token = cookieStore.get('inventory_auth_state')?.value;
     if (!token) return null;
     return await verifyAuthState(token);
-  } catch (err) {
+  } catch {
     // cookies() throws if called outside a request context
     return null;
   }

@@ -18,7 +18,7 @@ export default async function ToolsListPage() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0">Tools List</h1>
         {canManage && (
-          <Link href="/tools/new" className="btn btn-primary">
+          <Link href="/dashboard/tools/new" className="btn btn-primary">
             + Add Tool
           </Link>
         )}
@@ -47,7 +47,7 @@ export default async function ToolsListPage() {
                   tools.map((tool) => (
                     <tr key={tool.id}>
                       <td className="align-middle border-secondary border-opacity-25 bg-transparent">
-                        <Link href={`/tools/${tool.id}`} className="text-decoration-none text-info fw-semibold">
+                        <Link href={`/dashboard/tools/${tool.id}`} className="text-decoration-none text-info fw-semibold">
                           {tool.name}
                         </Link>
                       </td>
@@ -66,12 +66,12 @@ export default async function ToolsListPage() {
                       </td>
                       <td className="align-middle border-secondary border-opacity-25 bg-transparent text-end">
                         <div className="d-flex justify-content-end gap-2">
-                          <Link href={`/tools/${tool.id}`} className="btn btn-sm btn-outline-light">
+                          <Link href={`/dashboard/tools/${tool.id}`} className="btn btn-sm btn-outline-light">
                             View
                           </Link>
                           {canManage && (
                             <>
-                              <Link href={`/tools/${tool.id}/edit`} className="btn btn-sm btn-outline-warning">
+                              <Link href={`/dashboard/tools/${tool.id}/edit`} className="btn btn-sm btn-outline-warning">
                                 Edit
                               </Link>
                               <form action={deleteToolAction.bind(null, tool.id)}>
