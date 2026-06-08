@@ -30,18 +30,18 @@ export async function createClient() {
 export const supabaseAdapter: AuthAdapter = {
   getSession: async (): Promise<AuthResponse<AuthSession>> => {
     const supabase = await createClient();
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const { data: { user }, error } = await supabase.auth.getUser();
     
-    if (error || !session) {
+    if (error || !user) {
       return { data: null, error: error ? { message: error.message } : null };
     }
 
     const authSession: AuthSession = {
       user: {
-        id: session.user.id,
-        email: session.user.email!,
-        name: session.user.user_metadata?.name || null,
-        role: session.user.user_metadata?.role,
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || null,
+        role: user.user_metadata?.role,
       }
     };
     return { data: authSession, error: null };
