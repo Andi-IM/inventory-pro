@@ -6,7 +6,7 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 
 - Directory: `docs/decisions/`
 - Naming:
-  - Use date-prefixed files: `YYYY-MM-DD-filename.md`
+  - Use 4-digit incremental integers: `NNNN-filename.md` (e.g., `0001-adopt-architecture-decision-records.md`)
 - Status values: `proposed`, `accepted`, `rejected`, `deprecated`, `superseded`
 
 ## Workflow
@@ -18,7 +18,8 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 
 ## ADRs
 
-- [2026-06-08-adopt-architecture-decision-records.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-architecture-decision-records.md) - Adopt Architecture Decision Records (ADR)
-- [2026-06-08-adopt-nextjs-app-router-bootstrap.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-nextjs-app-router-bootstrap.md) - Adopt Next.js with App Router and Bootstrap CSS
-- [2026-06-08-adopt-camunda-7-rest-client.md](file:///d:/01_Projects/next-herts/docs/decisions/2026-06-08-adopt-camunda-7-rest-client.md) - Adopt Camunda 7 REST Client
+- [0001-adopt-architecture-decision-records.md](file:///d:/01_Projects/next-herts/docs/decisions/0001-adopt-architecture-decision-records.md) - Adopt Architecture Decision Records (ADR)
+- [0002-adopt-nextjs-app-router-bootstrap.md](file:///d:/01_Projects/next-herts/docs/decisions/0002-adopt-nextjs-app-router-bootstrap.md) - Adopt Next.js with App Router and Bootstrap CSS
+- [0003-adopt-camunda-7-rest-client.md](file:///d:/01_Projects/next-herts/docs/decisions/0003-adopt-camunda-7-rest-client.md) - Adopt Camunda 7 REST Client
+
 
