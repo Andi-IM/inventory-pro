@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { query } from '@/lib/db';
 import {
   getUserRole,
@@ -7,6 +7,12 @@ import {
   hasPermission,
   isFeatureEnabled,
 } from './authorization';
+
+vi.mock('next/cache', () => ({
+  unstable_cache: vi.fn((fn) => fn),
+  revalidateTag: vi.fn(),
+  revalidatePath: vi.fn(),
+}));
 
 describe('Dynamic Authorization Helpers Integration Tests', () => {
   const testUserId = '99999999-9999-9999-9999-999999999999';

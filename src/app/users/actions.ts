@@ -1,7 +1,7 @@
 'use server';
 
 import { query } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
 import { invalidateUserRoleCache } from '@/lib/redis';
@@ -17,6 +17,7 @@ export async function updateUserRole(userId: string, role: string) {
   await assertPermissionForAction('user:manage');
   await query('UPDATE neon_auth.user SET role = $1 WHERE id = $2', [role, userId]);
   await invalidateUserRoleCache(userId);
+  revalidateTag(`user_role_${userId}`, 'max');
   revalidatePath('/users');
 }
 
@@ -26,6 +27,7 @@ export async function addUserPermission(userId: string, permission: string) {
     'INSERT INTO public.user_permissions (user_id, permission) VALUES ($1, $2) ON CONFLICT (user_id, permission) DO NOTHING',
     [userId, permission]
   );
+  revalidateTag(`user_permissions_${userId}`, 'max');
   revalidatePath('/users');
 }
 
@@ -35,5 +37,6 @@ export async function removeUserPermission(userId: string, permission: string) {
     userId,
     permission,
   ]);
+  revalidateTag(`user_permissions_${userId}`, 'max');
   revalidatePath('/users');
 }

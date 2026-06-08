@@ -3,6 +3,7 @@
 
 import { cache } from 'react';
 import { cookies } from 'next/headers';
+import { unstable_cache } from 'next/cache';
 import { query } from '@/lib/db';
 import { verifyAuthState } from './jwt';
 
@@ -25,7 +26,7 @@ async function getCachedAuthState() {
 /**
  * Get the base role of a user.
  * 1. Checks JWT Cookie (stateless, <5ms).
- * 2. Falls back to DB query.
+ * 2. Falls back to Next.js Data Cache (unstable_cache) + DB query.
  */
 export const getUserRole = cache(async function getUserRole(userId: string): Promise<string> {
   const authState = await getCachedAuthState();
@@ -33,63 +34,91 @@ export const getUserRole = cache(async function getUserRole(userId: string): Pro
     return authState.role;
   }
 
-  // --- Postgres fallback ---
-  const rows = await query<{ role: string | null }>(
-    'SELECT role FROM neon_auth.user WHERE id = $1',
-    [userId]
-  );
-  
-  const role = (rows.length === 0 || !rows[0].role) ? 'peminjam' : rows[0].role;
-  return role;
+  // --- Next.js Data Cache Fallback ---
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ role: string | null }>(
+        'SELECT role FROM neon_auth.user WHERE id = $1',
+        [userId]
+      );
+      return (rows.length === 0 || !rows[0].role) ? 'peminjam' : rows[0].role;
+    },
+    ['db_user_role', userId],
+    { tags: [`user_role_${userId}`] }
+  )();
 });
 
 /**
  * Retrieve all default permissions mapped to a role in the role_permissions table.
  */
 export async function getRolePermissions(role: string): Promise<string[]> {
-  const rows = await query<{ permission: string }>(
-    'SELECT permission FROM public.role_permissions WHERE role = $1',
-    [role]
-  );
-  return rows.map((r) => r.permission);
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ permission: string }>(
+        'SELECT permission FROM public.role_permissions WHERE role = $1',
+        [role]
+      );
+      return rows.map((r) => r.permission);
+    },
+    ['db_role_permissions', role],
+    { tags: [`role_permissions_${role}`] }
+  )();
 }
 
 /**
  * Retrieve all custom, user-specific permission overrides from the user_permissions table.
  */
 export async function getUserPermissions(userId: string): Promise<string[]> {
-  const rows = await query<{ permission: string }>(
-    'SELECT permission FROM public.user_permissions WHERE user_id = $1',
-    [userId]
-  );
-  return rows.map((r) => r.permission);
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ permission: string }>(
+        'SELECT permission FROM public.user_permissions WHERE user_id = $1',
+        [userId]
+      );
+      return rows.map((r) => r.permission);
+    },
+    ['db_user_permissions', userId],
+    { tags: [`user_permissions_${userId}`] }
+  )();
 }
 
 /**
  * Get all available roles dynamically.
  */
 export async function getAvailableRoles(): Promise<string[]> {
-  const rows = await query<{ role: string }>(
-    'SELECT DISTINCT role FROM public.role_permissions ORDER BY role ASC'
-  );
-  const roles = rows.map((r) => r.role);
-  if (!roles.includes('superuser')) {
-    roles.push('superuser');
-  }
-  return roles;
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ role: string }>(
+        'SELECT DISTINCT role FROM public.role_permissions ORDER BY role ASC'
+      );
+      const roles = rows.map((r) => r.role);
+      if (!roles.includes('superuser')) {
+        roles.push('superuser');
+      }
+      return roles;
+    },
+    ['db_available_roles'],
+    { tags: ['available_roles'] }
+  )();
 }
 
 /**
  * Get all known permissions from the system.
  */
 export async function getAvailablePermissions(): Promise<string[]> {
-  const rows = await query<{ permission: string }>(
-    `SELECT DISTINCT permission FROM public.role_permissions
-     UNION
-     SELECT DISTINCT permission FROM public.user_permissions
-     ORDER BY permission ASC`
-  );
-  return rows.map((r) => r.permission);
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ permission: string }>(
+        `SELECT DISTINCT permission FROM public.role_permissions
+         UNION
+         SELECT DISTINCT permission FROM public.user_permissions
+         ORDER BY permission ASC`
+      );
+      return rows.map((r) => r.permission);
+    },
+    ['db_available_permissions'],
+    { tags: ['available_permissions'] }
+  )();
 }
 
 /**
@@ -103,7 +132,7 @@ export async function hasRole(userId: string, role: string): Promise<boolean> {
 /**
  * Determine if a user has access to a specific permission.
  * 1. Checks JWT Cookie (stateless, <5ms).
- * 2. Falls back to DB queries.
+ * 2. Falls back to Next.js Data Cache / DB queries.
  */
 export async function hasPermission(userId: string, permission: string): Promise<boolean> {
   const authState = await getCachedAuthState();
@@ -134,7 +163,7 @@ export async function hasPermission(userId: string, permission: string): Promise
 /**
  * Check if a dynamic feature flag is active.
  * 1. Checks JWT Cookie (stateless, <5ms).
- * 2. Falls back to Postgres.
+ * 2. Falls back to Next.js Data Cache.
  */
 export async function isFeatureEnabled(key: string, userId?: string): Promise<boolean> {
   const authState = await getCachedAuthState();
@@ -150,10 +179,16 @@ export async function isFeatureEnabled(key: string, userId?: string): Promise<bo
     }
   }
 
-  // --- Postgres fallback ---
-  const rows = await query<{ enabled: boolean }>(
-    'SELECT enabled FROM public.feature_flags WHERE key = $1',
-    [key]
-  );
-  return rows.length > 0 ? rows[0].enabled : false;
+  // --- Next.js Data Cache Fallback ---
+  return unstable_cache(
+    async () => {
+      const rows = await query<{ enabled: boolean }>(
+        'SELECT enabled FROM public.feature_flags WHERE key = $1',
+        [key]
+      );
+      return rows.length > 0 ? rows[0].enabled : false;
+    },
+    ['db_feature_flag', key],
+    { tags: ['feature_flags'] }
+  )();
 }

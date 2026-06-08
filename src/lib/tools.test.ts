@@ -6,6 +6,12 @@ vi.mock('./db', () => ({
   query: vi.fn(),
 }));
 
+// Mock next/cache
+vi.mock('next/cache', () => ({
+  unstable_cache: vi.fn((fn) => fn),
+  revalidateTag: vi.fn(),
+}));
+
 // We need to import the mocked query function to set its return values
 import { query } from './db';
 

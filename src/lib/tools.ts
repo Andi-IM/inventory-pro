@@ -1,4 +1,6 @@
 import { query } from './db';
+import { unstable_cache } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 export interface Tool {
   id: string;
@@ -12,12 +14,24 @@ export interface Tool {
 export type ToolInput = Omit<Tool, 'id' | 'created_at' | 'updated_at'>;
 
 export async function getTools(): Promise<Tool[]> {
-  return await query<Tool>('SELECT * FROM public.tools ORDER BY created_at DESC');
+  return unstable_cache(
+    async () => {
+      return await query<Tool>('SELECT * FROM public.tools ORDER BY created_at DESC');
+    },
+    ['db_tools_list'],
+    { tags: ['tools'] }
+  )();
 }
 
 export async function getToolById(id: string): Promise<Tool | null> {
-  const rows = await query<Tool>('SELECT * FROM public.tools WHERE id = $1', [id]);
-  return rows[0] || null;
+  return unstable_cache(
+    async () => {
+      const rows = await query<Tool>('SELECT * FROM public.tools WHERE id = $1', [id]);
+      return rows[0] || null;
+    },
+    ['db_tool', id],
+    { tags: [`tool_${id}`, 'tools'] }
+  )();
 }
 
 export async function createTool(data: ToolInput): Promise<Tool> {
@@ -27,6 +41,7 @@ export async function createTool(data: ToolInput): Promise<Tool> {
      RETURNING *`,
     [data.name, data.description || null, data.status]
   );
+  revalidateTag('tools', 'max');
   return rows[0];
 }
 
@@ -67,9 +82,15 @@ export async function updateTool(id: string, data: Partial<ToolInput>): Promise<
 
   const rows = await query<Tool>(queryText, values);
   if (!rows[0]) throw new Error('Tool not found');
+  
+  revalidateTag('tools', 'max');
+  revalidateTag(`tool_${id}`, 'max');
+  
   return rows[0];
 }
 
 export async function deleteTool(id: string): Promise<void> {
   await query('DELETE FROM public.tools WHERE id = $1', [id]);
+  revalidateTag('tools', 'max');
+  revalidateTag(`tool_${id}`, 'max');
 }

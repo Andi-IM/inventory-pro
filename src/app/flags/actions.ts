@@ -4,7 +4,7 @@
 // See: docs/decisions/0011-adopt-redis-cache-for-feature-flags.md
 
 import { query } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
 import { invalidateFlagCache } from '@/lib/redis';
@@ -24,6 +24,7 @@ export async function toggleFeatureFlag(key: string, enabled: boolean) {
   );
   // Evict Redis cache so the next request reads the fresh value immediately
   await invalidateFlagCache(key);
+  revalidateTag('feature_flags', 'max');
   revalidatePath('/flags');
   revalidatePath('/');
 }

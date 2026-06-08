@@ -1,7 +1,7 @@
 'use server';
 
 import { query } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { auth } from '@/lib/auth/server';
 import { hasPermission } from '@/lib/auth/authorization';
 
@@ -18,6 +18,7 @@ export async function addRolePermission(role: string, permission: string) {
     'INSERT INTO public.role_permissions (role, permission) VALUES ($1, $2) ON CONFLICT (role, permission) DO NOTHING',
     [role, permission]
   );
+  revalidateTag(`role_permissions_${role}`, 'max');
   revalidatePath('/roles');
 }
 
@@ -27,5 +28,6 @@ export async function removeRolePermission(role: string, permission: string) {
     role,
     permission,
   ]);
+  revalidateTag(`role_permissions_${role}`, 'max');
   revalidatePath('/roles');
 }
