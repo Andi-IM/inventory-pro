@@ -30,10 +30,17 @@ export async function proxy(request: NextRequest) {
   // refresh session if expired
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect routes under /account (or other paths)
-  if (request.nextUrl.pathname.startsWith('/account') && !user) {
+  // Protect routes under /dashboard
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/sign-in'
+    return NextResponse.redirect(url)
+  }
+
+  // Backward compatibility: redirect /tools to /dashboard/tools
+  if (request.nextUrl.pathname.startsWith('/tools')) {
+    const url = request.nextUrl.clone()
+    url.pathname = request.nextUrl.pathname.replace('/tools', '/dashboard/tools')
     return NextResponse.redirect(url)
   }
 
@@ -42,6 +49,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/dashboard/:path*',
+    '/tools/:path*',
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -28,5 +28,8 @@ An Architecture Decision Record (ADR) captures an important architecture decisio
 - [0008-adopt-conventional-commits-and-automated-semantic-versioning.md](0008-adopt-conventional-commits-and-automated-semantic-versioning.md) - Adopt Conventional Commits and Automated Semantic Versioning
 - [0009-implement-tool-management-module.md](0009-implement-tool-management-module.md) - Implement Tool Management Module using Server Actions
 - [0010-flatten-admin-features-with-flags-and-permissions.md](0010-flatten-admin-features-with-flags-and-permissions.md) - Flatten Admin Features with Feature Flags and Permissions
-
-
+- [0011-adopt-redis-cache-for-feature-flags.md](0011-adopt-redis-cache-for-feature-flags.md) - Adopt Redis Cache for Feature Flags
+- [0012-adopt-database-agnostic-architecture.md](0012-adopt-database-agnostic-architecture.md) - Adopt Database Agnostic Architecture
+- [0012-stateless-jwt-authorization.md](0012-stateless-jwt-authorization.md) - Stateless JWT Authorization
+- [0013-replace-neon-auth-with-supabase-auth.md](0013-replace-neon-auth-with-supabase-auth.md) - Replace Neon Auth with Supabase Auth
+- [0014-migrate-tools-module-to-prisma-and-isolate-client-components.md](0014-migrate-tools-module-to-prisma-and-isolate-client-components.md) - Migrate Tools Module to Prisma and Isolate Client Components

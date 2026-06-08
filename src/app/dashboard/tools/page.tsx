@@ -3,6 +3,7 @@ import { getTools } from '@/lib/tools';
 import { auth } from '@/lib/auth/server';
 import { getUserRole } from '@/lib/auth/authorization';
 import { deleteToolAction } from './actions';
+import { DeleteButton } from './DeleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +63,7 @@ export default async function ToolsListPage() {
                         </span>
                       </td>
                       <td className="align-middle border-secondary border-opacity-25 bg-transparent text-white-50">
-                        {new Date(tool.created_at).toLocaleDateString()}
+                        {new Date(tool.createdAt).toLocaleDateString()}
                       </td>
                       <td className="align-middle border-secondary border-opacity-25 bg-transparent text-end">
                         <div className="d-flex justify-content-end gap-2">
@@ -75,11 +76,7 @@ export default async function ToolsListPage() {
                                 Edit
                               </Link>
                               <form action={deleteToolAction.bind(null, tool.id)}>
-                                <button type="submit" className="btn btn-sm btn-outline-danger" onClick={(e) => {
-                                  if (!confirm('Are you sure you want to delete this tool?')) e.preventDefault();
-                                }}>
-                                  Delete
-                                </button>
+                                <DeleteButton className="btn btn-sm btn-outline-danger" />
                               </form>
                             </>
                           )}

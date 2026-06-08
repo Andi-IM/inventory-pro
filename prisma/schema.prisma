@@ -51,3 +51,14 @@ model FeatureFlag {
 
   @@map("feature_flags")
 }
+
+model Tool {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("available")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("tools")
+}
