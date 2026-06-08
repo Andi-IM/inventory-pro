@@ -14,7 +14,7 @@ When building software, important architectural decisions are made. Without docu
 
 We will adopt the lightweight Architecture Decision Records (ADR) practice.
 All architectural decisions will be stored as Markdown files in the `docs/decisions/` directory.
-We will use date-prefixed file names (e.g., `YYYY-MM-DD-filename.md`).
+We will use 4-digit incremental integers: `NNNN-filename.md` (e.g., `0001-adopt-architecture-decision-records.md`).
 Status values will track the lifecycle: `proposed`, `accepted`, `rejected`, `deprecated`, or `superseded`.
 
 ## Consequences

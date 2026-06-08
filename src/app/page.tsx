@@ -1,6 +1,20 @@
 import Image from "next/image";
+import Link from "next/link";
+import { auth } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+async function signOut() {
+  'use server';
+  await auth.signOut();
+  redirect('/');
+}
+
+export default async function Home() {
+  const { data: session } = await auth.getSession();
+  const user = session?.user;
+
   return (
     <main className="min-vh-100 bg-dark text-white d-flex flex-column justify-content-between">
       {/* Navigation */}
@@ -21,11 +35,35 @@ export default function Home() {
               v1.0.0
             </span>
           </div>
-          <nav className="d-flex gap-4">
-            <a href="https://nextjs.org/docs" className="text-white-50 text-decoration-none hover-white transition-all">Docs</a>
-            <a href="https://getbootstrap.com" className="text-white-50 text-decoration-none hover-white transition-all">Bootstrap</a>
-            <a href="https://github.com" className="text-white-50 text-decoration-none hover-white transition-all">GitHub</a>
-          </nav>
+          <div className="d-flex align-items-center gap-4">
+            <nav className="d-flex gap-4">
+              <a href="https://nextjs.org/docs" className="text-white-50 text-decoration-none hover-white transition-all">Docs</a>
+              <a href="https://getbootstrap.com" className="text-white-50 text-decoration-none hover-white transition-all">Bootstrap</a>
+            </nav>
+            <div className="vr text-secondary border-opacity-25 d-none d-sm-block"></div>
+            
+            {user ? (
+              <div className="d-flex align-items-center gap-3">
+                <span className="small text-white-50 d-none d-sm-inline">
+                  Hi, <strong className="text-white">{user.name}</strong>
+                </span>
+                <form action={signOut}>
+                  <button type="submit" className="btn btn-outline-danger btn-sm px-3 rounded-2 fw-semibold">
+                    Sign Out
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="d-flex gap-2">
+                <Link href="/auth/sign-in" className="btn btn-outline-light btn-sm px-3 rounded-2 fw-semibold">
+                  Sign In
+                </Link>
+                <Link href="/auth/sign-up" className="btn btn-primary btn-sm px-3 rounded-2 fw-semibold">
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -37,48 +75,60 @@ export default function Home() {
               Next.js Boilerplate with{" "}
               <span 
                 style={{
-                  background: "linear-gradient(45deg, #6f42c1, #0d6efd)",
+                  background: "linear-gradient(45deg, #0d6efd, #0dcaf0)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent"
                 }}
               >
-                Bootstrap CSS
+                Neon Auth
               </span>
             </h1>
             <p className="lead text-white-50 mb-5">
-              Experience the power of Next.js App Router, TypeScript, and ESLint combined with the responsive components of Bootstrap CSS. Complete with interactive client-side hydration.
+              Experience the power of Next.js App Router, TypeScript, and ESLint combined with the responsive components of Bootstrap CSS. Complete with native Neon Auth (Better Auth) session management.
             </p>
             <div className="d-flex gap-3 flex-wrap">
-              <a href="https://nextjs.org" className="btn btn-primary btn-lg px-4 py-3 fw-semibold rounded-3 shadow-sm hover-translate-y">
-                Get Started
-              </a>
-              <button 
-                type="button"
-                className="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-3"
-                data-bs-toggle="collapse"
-                data-bs-target="#demoCollapse"
-                aria-expanded="false"
-                aria-controls="demoCollapse"
-              >
-                Toggle Interactive Demo
-              </button>
+              {user ? (
+                <div className="alert alert-success border-success border-opacity-25 bg-success bg-opacity-10 text-white rounded-3 p-3 w-100">
+                  <h5 className="alert-heading fw-bold mb-2">🎉 Welcome Back, {user.name}!</h5>
+                  <p className="small text-white-50 mb-0">You are securely signed in using Neon Auth. Your email is <code>{user.email}</code>.</p>
+                </div>
+              ) : (
+                <>
+                  <Link href="/auth/sign-up" className="btn btn-primary btn-lg px-4 py-3 fw-semibold rounded-3 shadow-sm hover-translate-y">
+                    Create Free Account
+                  </Link>
+                  <button 
+                    type="button"
+                    className="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-3"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#demoCollapse"
+                    aria-expanded="false"
+                    aria-controls="demoCollapse"
+                  >
+                    Toggle Interactive Demo
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Interactive Collapse Demo (to verify Bootstrap JS works!) */}
-            <div className="collapse mt-4" id="demoCollapse">
-              <div className="card card-body bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded-3 text-white">
-                <h5 className="card-title text-info">🎉 Bootstrap JavaScript is Working!</h5>
-                <p className="card-text text-white-50">
-                  This collapse panel was triggered using Bootstrap&apos;s native client-side collapse component. This verifies the dynamic loader is rendering correctly.
-                </p>
+            {!user && (
+              <div className="collapse mt-4" id="demoCollapse">
+                <div className="card card-body bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded-3 text-white">
+                  <h5 className="card-title text-info">🎉 Bootstrap JavaScript is Working!</h5>
+                  <p className="card-text text-white-50">
+                    This collapse panel was triggered using Bootstrap&apos;s native client-side collapse component. This verifies the dynamic loader is rendering correctly.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="col-lg-6 d-flex justify-content-center">
             <div 
-              className="position-relative p-5 bg-gradient rounded-5 border border-secondary border-opacity-25 shadow-lg" 
+              className="position-relative p-5 bg-gradient rounded-5 border border-secondary border-opacity-25 shadow-lg w-100" 
               style={{
-                background: "radial-gradient(circle at top left, rgba(13, 110, 253, 0.1), transparent 70%)"
+                background: "radial-gradient(circle at top left, rgba(13, 110, 253, 0.1), transparent 70%)",
+                maxWidth: '450px'
               }}
             >
               <div className="text-center">
@@ -92,8 +142,17 @@ export default function Home() {
                   priority
                 />
                 <div className="fs-1 fw-bold text-secondary-emphasis">+</div>
-                <div className="display-3 fw-bold" style={{ color: "#6f42c1" }}>B</div>
-                <p className="mt-3 text-muted">TypeScript &bull; ESLint &bull; App Router</p>
+                <div 
+                  className="display-5 fw-bold" 
+                  style={{
+                    background: "linear-gradient(45deg, #0d6efd, #0dcaf0)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent"
+                  }}
+                >
+                  Neon Auth
+                </div>
+                <p className="mt-4 text-muted small">TypeScript &bull; ESLint &bull; Bootstrap CSS</p>
               </div>
             </div>
           </div>
@@ -105,9 +164,9 @@ export default function Home() {
         <div className="row g-4">
           <div className="col-md-4">
             <div className="p-4 rounded-3 h-100 bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
-              <h3 className="h5 text-info mb-3">App Router</h3>
+              <h3 className="h5 text-info mb-3">Neon Auth</h3>
               <p className="text-white-50 small mb-0">
-                Leverages Next.js server components, nested layouts, and robust client/server routing conventions.
+                Managed authentication built on Better Auth that branches with your database environment.
               </p>
             </div>
           </div>
