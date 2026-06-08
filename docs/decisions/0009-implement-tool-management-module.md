@@ -1,5 +1,5 @@
 ---
-status: 'accepted'
+status: accepted
 date: 2026-06-08
 decision-makers: 'User, AI Agent'
 ---
@@ -72,3 +72,4 @@ The Tool Management feature is gated behind a database-controlled feature flag. 
 ## More Information
 
 - See `docs/decisions/0002-adopt-nextjs-app-router-bootstrap.md` for context on the Next.js and UI stack.
+

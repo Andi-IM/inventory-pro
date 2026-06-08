@@ -1,5 +1,5 @@
 ---
-status: 'accepted'
+status: accepted
 date: 2026-06-08
 decision-makers: 'User, AI Agent'
 ---
@@ -44,3 +44,4 @@ This flattens the architecture, making every feature a first-class citizen gover
 - [x] `/admin` returns a 404 Not Found.
 - [x] Users with `operator` role and `user:manage` permission can access `/users` but not `/roles`.
 - [x] Superuser can access all modules regardless of feature flag status.
+
