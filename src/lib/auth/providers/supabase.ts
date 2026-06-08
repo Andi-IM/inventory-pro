@@ -53,7 +53,7 @@ export const supabaseAdapter: AuthAdapter = {
   },
   
   signUp: {
-    email: async (credentials): Promise<AuthResponse<{ user: unknown }>> => {
+    email: async (credentials): Promise<AuthResponse<{ user: { id: string } }>> => {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.signUp({
         email: credentials.email,
@@ -79,18 +79,21 @@ export const supabaseAdapter: AuthAdapter = {
         }
       }
 
-      return { data: data.user ? { user: data.user } : null, error: error ? { message: error.message } : null };
+      return { data: data.user ? { user: { id: data.user.id } } : null, error: error ? { message: error.message } : null };
     }
   },
   
   signIn: {
-    email: async (credentials): Promise<AuthResponse<{ session: unknown }>> => {
+    email: async (credentials): Promise<AuthResponse<{ session: { user: { id: string } } }>> => {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
-      return { data: data.session ? { session: data.session } : null, error: error ? { message: error.message } : null };
+      return { 
+        data: data.session ? { session: { user: { id: data.session.user.id } } } : null, 
+        error: error ? { message: error.message } : null 
+      };
     }
   },
   
