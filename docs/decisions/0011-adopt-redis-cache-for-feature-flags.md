@@ -39,12 +39,12 @@ We will cache feature flag state in Redis using `ioredis`:
 - **Singleton client**: a single `ioredis` client is created at module load
   time in `src/lib/redis.ts` and reused across all requests. This matches the
   singleton pattern already used for the Postgres pool in `src/lib/db.ts`.
+- **User Role Cache**: `getUserRole` is also cached in Redis (key: `user_role:{userId}`,
+  TTL: 3600s) to eliminate the ~1s Postgres cold-start latency when resolving
+  superuser bypasses and initial role checks on every request.
 
 ## Non-goals
 
-- We are NOT caching user roles or per-user permissions in Redis at this time.
-  Those are smaller, already optimised with React.cache(), and introduce
-  invalidation complexity when roles change.
 - We are NOT implementing a distributed cache-aside pattern or cache stampede
   protection. The flag table is tiny and infrequently written; simple GET/SET
   is sufficient.

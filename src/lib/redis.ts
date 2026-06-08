@@ -46,3 +46,21 @@ export async function invalidateFlagCache(key: string): Promise<void> {
     console.warn(`[Redis] failed to invalidate cache for "${key}":`, (err as Error).message);
   }
 }
+
+/** Cache key for a user's role */
+export function userRoleCacheKey(userId: string): string {
+  return `user_role:${userId}`;
+}
+
+/**
+ * Evict a user's role from Redis.
+ * Called when an admin changes a user's role.
+ */
+export async function invalidateUserRoleCache(userId: string): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.del(userRoleCacheKey(userId));
+  } catch (err) {
+    console.warn(`[Redis] failed to invalidate role cache for user "${userId}":`, (err as Error).message);
+  }
+}

@@ -3,7 +3,8 @@
 
 import { cache } from 'react';
 import { query } from '@/lib/db';
-import { redis, flagCacheKey } from '@/lib/redis';
+import { redis, flagCacheKey, userRoleCacheKey } from '@/lib/redis';
+
 
 /**
  * Get the base role of a user from the neon_auth.user table.
@@ -12,16 +13,38 @@ import { redis, flagCacheKey } from '@/lib/redis';
  * Wrapped with React.cache() so that multiple callers within the same
  * server render (e.g. DashboardLayout → isFeatureEnabled → hasPermission)
  * share a single DB round-trip instead of each issuing their own query.
+ *
+ * Caches the role in Redis for 1 hour to prevent DB round-trips entirely.
  */
 export const getUserRole = cache(async function getUserRole(userId: string): Promise<string> {
+  // --- Redis cache layer ---
+  if (redis) {
+    try {
+      const cached = await redis.get(userRoleCacheKey(userId));
+      if (cached) {
+        return cached;
+      }
+    } catch (err) {
+      console.warn(`[Redis] cache read failed for user role "${userId}":`, (err as Error).message);
+    }
+  }
+
+  // --- Postgres fallback ---
   const rows = await query<{ role: string | null }>(
     'SELECT role FROM neon_auth.user WHERE id = $1',
     [userId]
   );
-  if (rows.length === 0) {
-    return 'peminjam';
+  
+  const role = (rows.length === 0 || !rows[0].role) ? 'peminjam' : rows[0].role;
+
+  // Populate cache for subsequent requests (fire-and-forget; TTL = 1 hour)
+  if (redis) {
+    redis.set(userRoleCacheKey(userId), role, 'EX', 3600).catch((err) => {
+      console.warn(`[Redis] cache write failed for user role "${userId}":`, (err as Error).message);
+    });
   }
-  return rows[0].role || 'peminjam';
+
+  return role;
 });
 
 /**
