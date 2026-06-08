@@ -8,7 +8,7 @@ decision-makers: Developer, User
 
 ## Context and Problem Statement
 
-We are starting a new web application (`next-herts`). We need a modern, scalable web framework with good routing, rendering, and SEO performance out of the box, as well as a robust styling system. Tailwind CSS is not preferred for this project; instead, Bootstrap CSS is requested for UI design and responsive grids. We need to bootstrap this codebase in a clean, maintainable structure.
+We are starting a new web application (`InventoryPro`). We need a modern, scalable web framework with good routing, rendering, and SEO performance out of the box, as well as a robust styling system. Tailwind CSS is not preferred for this project; instead, Bootstrap CSS is requested for UI design and responsive grids. We need to bootstrap this codebase in a clean, maintainable structure.
 
 ## Decision
 

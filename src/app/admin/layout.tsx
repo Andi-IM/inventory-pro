@@ -31,7 +31,7 @@ export default async function AdminLayout({
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent"
             }}>
-              NextHerts Admin
+              InventoryPro Admin
             </Link>
             <span className="badge bg-danger rounded-pill px-2 py-1 fs-7 fw-semibold">
               Superuser Mode

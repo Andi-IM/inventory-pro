@@ -44,14 +44,14 @@ BPMN (Business Process Model and Notation) is a standardized visual modeling lan
 To save space and keep this guide focused, detailed guides, XML examples, and templates have been extracted to separate files in this skill directory:
 
 ### References
-- [Components Guide](file:///d:/01_Projects/herts/.agents/skills/bpmn-skill/references/components_guide.md): A detailed guide on when to use (and when NOT to use) specific Gateways, Tasks, and Events, along with their core principles.
+- [Components Guide](references/components_guide.md): A detailed guide on when to use (and when NOT to use) specific Gateways, Tasks, and Events, along with their core principles.
 
 ### Templates
-- [Basic Process Template](file:///d:/01_Projects/herts/.agents/skills/bpmn-skill/templates/basic_process_template.bpmn): A minimal, valid BPMN XML structure you can use as a starting point.
+- [Basic Process Template](templates/basic_process_template.bpmn): A minimal, valid BPMN XML structure you can use as a starting point.
 
 ### Examples
-- [Simple Sequential Process](file:///d:/01_Projects/herts/.agents/skills/bpmn-skill/examples/simple_sequential.bpmn): A straightforward process with no decisions.
-- [Exclusive Gateway Process](file:///d:/01_Projects/herts/.agents/skills/bpmn-skill/examples/exclusive_gateway.bpmn): A process demonstrating conditional branching (if/else) using gateways.
+- [Simple Sequential Process](examples/simple_sequential.bpmn): A straightforward process with no decisions.
+- [Exclusive Gateway Process](examples/exclusive_gateway.bpmn): A process demonstrating conditional branching (if/else) using gateways.
 
 ## How to Generate BPMN XML
 

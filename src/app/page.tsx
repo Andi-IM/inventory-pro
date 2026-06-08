@@ -31,7 +31,7 @@ export default async function Home() {
                 WebkitTextFillColor: "transparent"
               }}
             >
-              NextHerts
+              InventoryPro
             </span>
             <span className="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 rounded-pill px-2 py-1 fs-7">
               v1.0.0
@@ -199,7 +199,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="py-4 border-top border-secondary border-opacity-25 bg-black bg-opacity-50">
         <div className="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
-          <p className="text-muted small mb-0">&copy; {new Date().getFullYear()} NextHerts. All rights reserved.</p>
+          <p className="text-muted small mb-0">&copy; {new Date().getFullYear()} InventoryPro. All rights reserved.</p>
           <div className="d-flex gap-3">
             <a href="#" className="text-muted text-decoration-none hover-white small">Privacy</a>
             <a href="#" className="text-muted text-decoration-none hover-white small">Terms</a>

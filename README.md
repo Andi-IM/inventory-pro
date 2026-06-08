@@ -1,6 +1,6 @@
-# NextHerts Boilerplate
+# InventoryPro
 
-A modern Next.js 16 (App Router) enterprise-grade boilerplate integrated with **Bootstrap CSS**, **Neon Auth** (managed Better Auth), a custom **Camunda 7 REST Client**, and a **dynamic database-driven authorization (RBAC + Fine-grained permission) system**.
+A modern Next.js 16 (App Router) enterprise-grade inventory management system integrated with **Bootstrap CSS**, **Neon Auth** (managed Better Auth), a custom **Camunda 7 REST Client**, and a **dynamic database-driven authorization (RBAC + Fine-grained permission) system**.
 
 ---
 
@@ -94,4 +94,4 @@ npm run lint
 
 ## 📂 Architecture Decisions (ADR)
 
-All key design decisions are documented and tracked in the Architecture Decision Records (ADRs) inside the [docs/adr/](file:///d:/01_Projects/next-herts/docs/adr/) directory.
+All key design decisions are documented and tracked in the Architecture Decision Records (ADRs) inside the [docs/decisions/](docs/decisions/) directory.

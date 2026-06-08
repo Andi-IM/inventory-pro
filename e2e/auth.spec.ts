@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('NextHerts Authentication & Interface E2E Tests', () => {
+test.describe('InventoryPro Authentication & Interface E2E Tests', () => {
 
   test('should verify Bootstrap client-side JS works on the homepage', async ({ page }) => {
     // Go to homepage
@@ -29,7 +29,7 @@ test.describe('NextHerts Authentication & Interface E2E Tests', () => {
     await page.goto('/auth/sign-in');
 
     // Check header
-    await expect(page.locator('h1')).toContainText('NextHerts Auth');
+    await expect(page.locator('h1')).toContainText('InventoryPro Auth');
     await expect(page.locator('p.text-white-50').first()).toContainText('Sign in to your account to continue');
 
     // Fill in credentials

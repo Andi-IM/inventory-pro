@@ -23,7 +23,7 @@ export default function SignUpForm() {
               WebkitTextFillColor: "transparent"
             }}
           >
-            NextHerts Auth
+            InventoryPro Auth
           </h1>
           <p className="text-white-50 small">Create a new account to get started</p>
         </div>

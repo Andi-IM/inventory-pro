@@ -22,7 +22,7 @@ export default function SignInForm() {
               WebkitTextFillColor: "transparent"
             }}
           >
-            NextHerts Auth
+            InventoryPro Auth
           </h1>
           <p className="text-white-50 small">Sign in to your account to continue</p>
         </div>
