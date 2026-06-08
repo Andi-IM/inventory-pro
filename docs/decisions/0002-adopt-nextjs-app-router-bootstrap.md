@@ -16,6 +16,11 @@ We will use Next.js as the core application framework, utilizing the modern App 
 For styling, we will adopt Bootstrap CSS. Tailwind CSS will be disabled.
 Bootstrap JavaScript (which requires a client browser context) will be loaded dynamically using a custom `<BootstrapClient />` component to ensure compatibility with Next.js App Router's SSR.
 
+## Non-goals
+- We are NOT using Tailwind CSS or any other utility-first CSS framework.
+- We are NOT building a custom CSS-in-JS solution.
+- We are NOT targeting mobile-only; the application must be responsive across all devices.
+
 ## Consequences
 
 - Good, because Next.js App Router provides excellent performance, built-in routing, and SEO best practices.

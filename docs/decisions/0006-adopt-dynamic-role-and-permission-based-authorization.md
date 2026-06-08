@@ -25,6 +25,16 @@ We will adopt a dynamic, database-driven Role-Based Access Control (RBAC) and pe
 - **Admin Management Console**: Build a `/admin` management panel styled with Bootstrap CSS to allow superusers to manage users, update user roles, assign user-specific permissions, customize role-to-permission mappings, and toggle feature flags.
 - **Helper Utilities**: Provide helper functions in `src/lib/auth/authorization.ts` that can be run on the server to check permissions in Next.js Server Components, Server Actions, and Route Handlers.
 
+## Non-goals
+- We are NOT implementing group-based permissions (only individual user and role-based) in the first phase.
+- We are NOT implementing an external Policy Decision Point (PDP) or using a dedicated authorization service.
+- We are NOT supporting attribute-based access control (ABAC) yet.
+
+## Alternatives Considered
+- **CASL:** Rejected to avoid introducing a complex library for what can be achieved with simple SQL queries against our existing Postgres instance.
+- **Hardcoded Flags:** Rejected as it doesn't allow for runtime changes without redeploying code.
+- **Auth0 / Okta RBAC:** Rejected to keep authorization logic close to our data and avoid external service costs and latency.
+
 ## Consequences
 
 - Good, because capabilities can be modified at runtime without rebuilding or redeploying the application.

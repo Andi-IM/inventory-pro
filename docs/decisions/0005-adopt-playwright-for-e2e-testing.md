@@ -21,6 +21,16 @@ We will adopt Playwright for E2E testing:
 - Add E2E runner scripts in `package.json` (`test:e2e`).
 - Add Playwright's local cache/report folders to `.gitignore`.
 
+## Non-goals
+- We are NOT testing in WebKit or Firefox in the first phase.
+- We are NOT performing load testing or performance benchmarking using Playwright.
+- We are NOT targeting mobile-specific gestures or interactions yet.
+
+## Alternatives Considered
+- **Cypress:** Rejected because Playwright offers native parallel execution without a paid dashboard and has a more modern API for handling multiple tabs and origins.
+- **Selenium:** Rejected as it is slower and requires more infrastructure management compared to Playwright's zero-config approach.
+- **Vitest for E2E:** Rejected as Vitest is optimized for unit/integration testing in JSDOM, whereas we need real browser interactions for authentication flows.
+
 ## Consequences
 
 - Good, because E2E tests run in a real browser, capturing client-side state, redirects, and forms validation accurately.

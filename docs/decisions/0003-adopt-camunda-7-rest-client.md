@@ -20,6 +20,16 @@ We will build a custom TypeScript REST client `CamundaClient` in `src/lib/camund
 - Performs field mapping (e.g., `id` -> `key`, `processInstanceId` -> `processInstanceKey`) to maintain application compatibility.
 - Parses REST Exception bodies on error and throws typed exceptions.
 
+## Non-goals
+- We are NOT supporting Camunda 8 (Zeebe) in this client.
+- We are NOT implementing a full BPMN modeler or process deployment tool in the client.
+- We are NOT implementing client-side polling or WebSockets in the initial phase.
+
+## Alternatives Considered
+- **Camunda 7 Node.js External Task Client:** Rejected because it is designed for long-polling workers, not for a Request-Response BFF (Backend for Frontend) architecture.
+- **Generic HTTP client (Axios):** Rejected to minimize dependencies and use the native `fetch` API which is well-integrated with Next.js caching.
+- **Camunda 8 (SaaS/Self-managed):** Rejected because the current project requirements and infrastructure are optimized for Camunda 7's lightweight REST API.
+
 ## Consequences
 
 - Good, because the client is lightweight, dependencies-free (only standard fetch), and fully typed.

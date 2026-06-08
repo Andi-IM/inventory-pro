@@ -17,12 +17,13 @@ All architectural decisions will be stored as Markdown files in the `docs/decisi
 We will use 4-digit incremental integers: `NNNN-filename.md` (e.g., `0001-adopt-architecture-decision-records.md`).
 Status values will track the lifecycle: `proposed`, `accepted`, `rejected`, `deprecated`, or `superseded`.
 
-## Consequences
+## Non-goals
+- We are NOT using a specialized CLI tool (like `adr-tools`) for managing records.
+- We are NOT requiring an ADR for every small code change or routine implementation choice.
 
-- Good, because decisions are documented in version control next to the code.
-- Good, because context, alternatives, and implementation plans are explicit.
-- Good, because it provides clear instructions and guardrails for human developers and future AI coding agents.
-- Bad, because it adds minor overhead when introducing major architectural changes.
+## Alternatives Considered
+- **Wiki or External Documentation:** Rejected because documentation should stay as close to the code as possible to ensure it is version-controlled and easily found by developers and agents.
+- **Code Comments only:** Rejected because complex architectural context often spans multiple files and requires a structured format that comments cannot provide.
 
 ## Implementation Plan
 

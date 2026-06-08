@@ -21,6 +21,16 @@ We will adopt Neon Auth for application authentication:
 - Secure protected routes (e.g., `/account`) using protective middleware in `proxy.ts`.
 - Build custom Sign Up and Sign In pages inside `src/app/auth/` using Next.js Server Actions and Bootstrap CSS for responsive form styling.
 
+## Non-goals
+- We are NOT supporting third-party social login providers (Google, GitHub) in the initial release.
+- We are NOT implementing a custom session storage; we are using Neon Auth's managed session management.
+- We are NOT supporting multi-factor authentication (MFA) in the first phase.
+
+## Alternatives Considered
+- **Clerk:** Rejected because we want to keep user and session data directly in our own Postgres instance to facilitate cross-table joins and RLS.
+- **NextAuth.js (Auth.js):** Rejected because Neon Auth provides superior support for database branching, which is critical for our development workflow.
+- **Firebase Auth:** Rejected due to vendor lock-in and the desire for a unified Postgres-centric architecture.
+
 ## Consequences
 
 - Good, because identity data is co-located with our Postgres database, making user querying and Row Level Security (RLS) easy.
