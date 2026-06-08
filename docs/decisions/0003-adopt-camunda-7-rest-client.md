@@ -40,8 +40,8 @@ We will build a custom TypeScript REST client `CamundaClient` in `src/lib/camund
 
 ### Verification
 
-- [ ] Task search matches active tasks and applies mapping correctly.
-- [ ] Process instance starts and returns mapped `processInstanceKey`.
-- [ ] Task variables are flattened and fetched successfully.
-- [ ] Completing a task successfully sends formatted variables to CP7.
-- [ ] API errors are caught, parsed, and logged cleanly.
+- [x] Task search matches active tasks and applies mapping correctly.
+- [x] Process instance starts and returns mapped `processInstanceKey`.
+- [x] Task variables are flattened and fetched successfully.
+- [x] Completing a task successfully sends formatted variables to CP7.
+- [x] API errors are caught, parsed, and logged cleanly.

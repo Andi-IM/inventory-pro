@@ -36,10 +36,10 @@ Bootstrap JavaScript (which requires a client browser context) will be loaded dy
 
 ### Verification
 
-- [ ] Next.js app bootstrapped and starts successfully via dev server.
-- [ ] Bootstrap packages installed (`bootstrap`).
-- [ ] Bootstrap CSS loaded successfully and styled button elements render as expected.
-- [ ] Bootstrap Client component created and imported without SSR warnings.
+- [x] Next.js app bootstrapped and starts successfully via dev server.
+- [x] Bootstrap packages installed (`bootstrap`).
+- [x] Bootstrap CSS loaded successfully and styled button elements render as expected.
+- [x] Bootstrap Client component created and imported without SSR warnings.
 
 ## Alternatives Considered
 
