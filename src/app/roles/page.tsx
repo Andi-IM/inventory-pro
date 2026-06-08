@@ -1,6 +1,7 @@
 import { query } from '@/lib/db';
 import { getAvailableRoles, getAvailablePermissions } from '@/lib/auth/authorization';
 import { addRolePermission, removeRolePermission } from './actions';
+import SearchableCombobox from '@/components/SearchableCombobox';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,46 +44,26 @@ export default async function RolePermissionsAdmin() {
 
           {/* Role — searchable combobox */}
           <div className="col-md-5">
-            <label htmlFor="role-input" className="form-label text-white-50 small mb-1">
-              Role
-            </label>
-            <input
-              id="role-input"
+            <SearchableCombobox
               name="role"
-              type="text"
-              list="roles-datalist"
-              required
-              autoComplete="off"
+              options={availableRoles}
+              label="Role"
               placeholder="e.g. operator, peminjam, audit"
-              className="form-control form-control-sm bg-dark text-white border-secondary border-opacity-50"
+              allowNew={true}
+              required
             />
-            <datalist id="roles-datalist">
-              {availableRoles.map((r) => (
-                <option key={r} value={r} />
-              ))}
-            </datalist>
           </div>
 
           {/* Permission — searchable combobox */}
           <div className="col-md-5">
-            <label htmlFor="permission-input" className="form-label text-white-50 small mb-1">
-              Permission
-            </label>
-            <input
-              id="permission-input"
+            <SearchableCombobox
               name="permission"
-              type="text"
-              list="permissions-datalist"
-              required
-              autoComplete="off"
+              options={availablePermissions}
+              label="Permission"
               placeholder="e.g. loan:approve, user:delete"
-              className="form-control form-control-sm bg-dark text-white border-secondary border-opacity-50"
+              allowNew={true}
+              required
             />
-            <datalist id="permissions-datalist">
-              {availablePermissions.map((p) => (
-                <option key={p} value={p} />
-              ))}
-            </datalist>
           </div>
 
           <div className="col-md-2 d-flex align-items-end">
