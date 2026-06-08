@@ -32,7 +32,7 @@ export async function verifyAuthState(token: string): Promise<AuthState | null> 
       permissions: payload.permissions as string[],
       flags: payload.flags as Record<string, boolean>,
     };
-  } catch (error) {
+  } catch {
     // Token expired or invalid signature
     return null;
   }

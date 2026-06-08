@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
-import { getUserRole, isFeatureEnabled, hasPermission } from "@/lib/auth/authorization";
+import { isFeatureEnabled, hasPermission } from "@/lib/auth/authorization";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,6 @@ async function signOut() {
 export default async function Home() {
   const { data: session } = await auth.getSession();
   const user = session?.user;
-  const role = user ? await getUserRole(user.id) : null;
 
   return (
     <main className="min-vh-100 bg-dark text-white d-flex flex-column justify-content-between">

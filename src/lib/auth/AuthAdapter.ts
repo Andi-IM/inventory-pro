@@ -16,10 +16,13 @@ export interface AuthAdapter {
   getSession(): Promise<AuthResponse<AuthSession>>;
   signOut(): Promise<void>;
   signUp: {
-    email(credentials: { email: string; password: string; name: string }): Promise<AuthResponse<{ user: any }>>;
+    email(credentials: { email: string; password: string; name: string }): Promise<AuthResponse<{ user: unknown }>>;
   };
   signIn: {
-    email(credentials: { email: string; password: string }): Promise<AuthResponse<{ session: any }>>;
+    email(credentials: { email: string; password: string }): Promise<AuthResponse<{ session: unknown }>>;
   };
-  handler(): { GET: any; POST: any };
+  handler(): { 
+    GET: (req: Request) => Promise<Response>; 
+    POST: (req: Request) => Promise<Response>; 
+  };
 }

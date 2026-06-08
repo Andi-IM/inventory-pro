@@ -53,7 +53,7 @@ export const supabaseAdapter: AuthAdapter = {
   },
   
   signUp: {
-    email: async (credentials): Promise<AuthResponse<{ user: any }>> => {
+    email: async (credentials): Promise<AuthResponse<{ user: unknown }>> => {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.signUp({
         email: credentials.email,
@@ -84,7 +84,7 @@ export const supabaseAdapter: AuthAdapter = {
   },
   
   signIn: {
-    email: async (credentials): Promise<AuthResponse<{ session: any }>> => {
+    email: async (credentials): Promise<AuthResponse<{ session: unknown }>> => {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
