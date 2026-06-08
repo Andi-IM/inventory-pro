@@ -59,11 +59,11 @@ The Tool Management feature is gated behind a database-controlled feature flag. 
 
 ### Verification
 
-- [ ] A `tools` table exists in the Neon database with `id`, `name`, `description`, `status`, `created_at`, `updated_at`.
-- [ ] Navigating to `/tools` displays the tools list.
-- [ ] Submitting a new tool via `/tools/new` successfully inserts data to the database and redirects to the list.
-- [ ] Editing an existing tool correctly updates the database and the UI.
-- [ ] Deleting a tool correctly removes it from the list.
+- [x] A `tools` table exists in the Neon database with `id`, `name`, `description`, `status`, `created_at`, `updated_at`.
+- [x] Navigating to `/tools` displays the tools list.
+- [x] Submitting a new tool via `/tools/new` successfully inserts data to the database and redirects to the list.
+- [x] Editing an existing tool correctly updates the database and the UI.
+- [x] Deleting a tool correctly removes it from the list.
 
 ## Alternatives Considered
 

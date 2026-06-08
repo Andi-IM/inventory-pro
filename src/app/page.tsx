@@ -51,11 +51,22 @@ export default async function Home() {
                   Hi, <strong className="text-white">{user.name}</strong>
                 </span>
                 
-                {role === 'superuser' && (
-                  <Link href="/admin" className="btn btn-outline-warning btn-sm px-3 rounded-2 fw-semibold">
-                    Admin Console
+                {await isFeatureEnabled('user_management', user.id) && await hasPermission(user.id, 'user:manage') && (
+                  <Link href="/users" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                    Users
                   </Link>
                 )}
+                {await isFeatureEnabled('role_management', user.id) && await hasPermission(user.id, 'role:manage') && (
+                  <Link href="/roles" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                    Roles
+                  </Link>
+                )}
+                {await isFeatureEnabled('flag_management', user.id) && await hasPermission(user.id, 'flag:manage') && (
+                  <Link href="/flags" className="btn btn-outline-info btn-sm px-3 rounded-2 fw-semibold">
+                    Flags
+                  </Link>
+                )}
+
                 <form action={signOut}>
                   <button type="submit" className="btn btn-outline-danger btn-sm px-3 rounded-2 fw-semibold">
                     Sign Out

@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { toggleFeatureFlag } from '../actions';
+import { toggleFeatureFlag } from './actions';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { addRolePermission, removeRolePermission } from '../actions';
+import { addRolePermission, removeRolePermission } from './actions';
 
 export const dynamic = 'force-dynamic';
 
