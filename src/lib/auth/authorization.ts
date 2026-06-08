@@ -41,6 +41,23 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
 }
 
 /**
+ * Get all available roles dynamically from the role_permissions table,
+ * plus 'superuser' which is always present as a special built-in role.
+ * This avoids hardcoding the role list in UI components.
+ */
+export async function getAvailableRoles(): Promise<string[]> {
+  const rows = await query<{ role: string }>(
+    'SELECT DISTINCT role FROM public.role_permissions ORDER BY role ASC'
+  );
+  const roles = rows.map((r) => r.role);
+  // 'superuser' is a special built-in role; always include it last
+  if (!roles.includes('superuser')) {
+    roles.push('superuser');
+  }
+  return roles;
+}
+
+/**
  * Check if a user belongs to a specific role (or is a superuser).
  */
 export async function hasRole(userId: string, role: string): Promise<boolean> {

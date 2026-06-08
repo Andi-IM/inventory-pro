@@ -1,16 +1,19 @@
 import { query } from '@/lib/db';
+import { getAvailableRoles } from '@/lib/auth/authorization';
 import { updateUserRole, addUserPermission, removeUserPermission } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function UserManagementAdmin() {
-  const users = await query<{ id: string; name: string | null; email: string; role: string | null }>(
-    'SELECT id, name, email, role FROM neon_auth.user ORDER BY name ASC, email ASC'
-  );
-
-  const overrides = await query<{ user_id: string; permission: string }>(
-    'SELECT user_id, permission FROM public.user_permissions ORDER BY permission ASC'
-  );
+  const [users, overrides, availableRoles] = await Promise.all([
+    query<{ id: string; name: string | null; email: string; role: string | null }>(
+      'SELECT id, name, email, role FROM neon_auth.user ORDER BY name ASC, email ASC'
+    ),
+    query<{ user_id: string; permission: string }>(
+      'SELECT user_id, permission FROM public.user_permissions ORDER BY permission ASC'
+    ),
+    getAvailableRoles(),
+  ]);
 
   // Group overrides by user_id
   const userOverrides: Record<string, string[]> = {};
@@ -101,9 +104,9 @@ export default async function UserManagementAdmin() {
                         defaultValue={u.role || 'peminjam'} 
                         className="form-select form-select-sm bg-dark text-white border-secondary border-opacity-50 w-auto"
                       >
-                        <option value="peminjam">peminjam</option>
-                        <option value="operator">operator</option>
-                        <option value="superuser">superuser</option>
+                        {availableRoles.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
                       </select>
                       <button type="submit" className="btn btn-outline-info btn-xs rounded-2 px-2 py-1" style={{ fontSize: '0.75rem' }}>
                         Save
