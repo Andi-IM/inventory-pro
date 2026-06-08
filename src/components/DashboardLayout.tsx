@@ -40,27 +40,40 @@ export default async function DashboardLayout({ children, pageTitle }: { childre
   }
 
   const user = session.user;
+
+  // Fetch role once; React.cache() ensures sub-calls (isFeatureEnabled,
+  // hasPermission) reuse this result without extra DB round-trips.
   const role = await getUserRole(user.id);
 
-  // Build nav items based on feature flags + permissions
-  const navItems = [];
+  // Run all feature-flag + permission checks in parallel.
+  // Previously these were sequential awaits → N×RTT waterfall.
+  const [
+    showTools,
+    showUsers,
+    showRoles,
+    showFlags,
+  ] = await Promise.all([
+    isFeatureEnabled('tool_management', user.id),
+    Promise.all([
+      isFeatureEnabled('user_management', user.id),
+      hasPermission(user.id, 'user:manage'),
+    ]).then(([flag, perm]) => flag && perm),
+    Promise.all([
+      isFeatureEnabled('role_management', user.id),
+      hasPermission(user.id, 'role:manage'),
+    ]).then(([flag, perm]) => flag && perm),
+    Promise.all([
+      isFeatureEnabled('flag_management', user.id),
+      hasPermission(user.id, 'flag:manage'),
+    ]).then(([flag, perm]) => flag && perm),
+  ]);
 
-  // Tools
-  if (await isFeatureEnabled('tool_management', user.id)) {
-    navItems.push({ href: '/tools', label: 'Tools', icon: Icons.tools });
-  }
-  // Users
-  if (await isFeatureEnabled('user_management', user.id) && await hasPermission(user.id, 'user:manage')) {
-    navItems.push({ href: '/users', label: 'Users', icon: Icons.users });
-  }
-  // Roles
-  if (await isFeatureEnabled('role_management', user.id) && await hasPermission(user.id, 'role:manage')) {
-    navItems.push({ href: '/roles', label: 'Roles', icon: Icons.roles });
-  }
-  // Feature Flags
-  if (await isFeatureEnabled('flag_management', user.id) && await hasPermission(user.id, 'flag:manage')) {
-    navItems.push({ href: '/flags', label: 'Feature Flags', icon: Icons.flags });
-  }
+  // Build nav items from resolved results
+  const navItems = [];
+  if (showTools)  navItems.push({ href: '/tools', label: 'Tools', icon: Icons.tools });
+  if (showUsers)  navItems.push({ href: '/users', label: 'Users', icon: Icons.users });
+  if (showRoles)  navItems.push({ href: '/roles', label: 'Roles', icon: Icons.roles });
+  if (showFlags)  navItems.push({ href: '/flags', label: 'Feature Flags', icon: Icons.flags });
 
   return (
     <div className="dashboard-root">

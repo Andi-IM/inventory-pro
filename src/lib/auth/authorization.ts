@@ -1,13 +1,18 @@
 // ADR: Adopt Dynamic Role and Permission-Based Authorization
 // See: docs/decisions/0006-adopt-dynamic-role-and-permission-based-authorization.md
 
+import { cache } from 'react';
 import { query } from '@/lib/db';
 
 /**
  * Get the base role of a user from the neon_auth.user table.
  * Defaults to 'peminjam' if the user role is null or not found.
+ *
+ * Wrapped with React.cache() so that multiple callers within the same
+ * server render (e.g. DashboardLayout → isFeatureEnabled → hasPermission)
+ * share a single DB round-trip instead of each issuing their own query.
  */
-export async function getUserRole(userId: string): Promise<string> {
+export const getUserRole = cache(async function getUserRole(userId: string): Promise<string> {
   const rows = await query<{ role: string | null }>(
     'SELECT role FROM neon_auth.user WHERE id = $1',
     [userId]
@@ -16,7 +21,7 @@ export async function getUserRole(userId: string): Promise<string> {
     return 'peminjam';
   }
   return rows[0].role || 'peminjam';
-}
+});
 
 /**
  * Retrieve all default permissions mapped to a role in the role_permissions table.
